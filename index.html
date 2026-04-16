@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>¿En qué se te va la semana? · RAPsi UNAL</title>
+  <meta name="description" content="Calculadora de tiempo semanal para estudiantes de la Universidad Nacional de Colombia. Descubre cómo distribuyes tus 168 horas." />
+
+  <!-- Chart.js via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- Google Fonts: Playfair Display (serif) + DM Sans (sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       VARIABLES Y RESET
+    ============================================================ */
+    :root {
+      --color-principal:  #27546c;
+      --color-fondo:      #e8ecff;
+      --color-acento-s:   #ffccc9;
+      --color-acento-f:   #ff9491;
+      --color-neutral:    #f4f3ee;
+      --color-text:       #1a2e38;
+      --color-text-muted: #5a7a8a;
+      --color-white:      #ffffff;
+
+      /* Categorías del gráfico */
+      --c-sleep:    #27546c;
+      --c-study:    #ff9491;
+      --c-transit:  #5a9bb5;
+      --c-screen:   #ffccc9;
+      --c-free:     #a8d5a2;
+
+      --radius:     16px;
+      --radius-sm:  8px;
+      --shadow:     0 4px 32px rgba(39,84,108,.10);
+      --shadow-lg:  0 12px 48px rgba(39,84,108,.18);
+
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body:    'DM Sans', 'Helvetica Neue', sans-serif;
+
+      /* Regla créditos → horas */
+      --horas-por-credito: 2;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--color-fondo);
+      color: var(--color-text);
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+
+    img { display: block; max-width: 100%; }
+    a   { color: inherit; }
+
+    /* ============================================================
+       UTILIDADES
+    ============================================================ */
+    .container {
+      width: min(100%, 1100px);
+      margin-inline: auto;
+      padding-inline: clamp(1rem, 5vw, 3rem);
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: .3rem .8rem;
+      border-radius: 100px;
+      background: var(--color-acento-s);
+      color: var(--color-principal);
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      line-height: 1.2;
+      color: var(--color-principal);
+      margin-block: .5rem 1.5rem;
+    }
+
+    .section-sub {
+      font-size: 1.05rem;
+      color: var(--color-text-muted);
+      max-width: 55ch;
+    }
+
+    /* ============================================================
+       HEADER / NAV
+    ============================================================ */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(232,236,255,.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(39,84,108,.08);
+      padding: .8rem 0;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      text-decoration: none;
+    }
+
+    .nav-brand .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--color-principal);
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    .nav-brand span {
+      font-weight: 600;
+      font-size: .95rem;
+      color: var(--color-principal);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: .88rem;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      text-decoration: none;
+      transition: color .2s;
+    }
+
+    .nav-links a:hover { color: var(--color-principal); }
+
+    /* ============================================================
+       HERO
+    ============================================================ */
+    .hero {
+      position: relative;
+      padding: clamp(4rem, 10vw, 8rem) 0 clamp(3rem, 8vw, 6rem);
+      overflow: hidden;
+    }
+
+    /* Decoración de fondo */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -120px;
+      right: -180px;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--color-acento-s) 0%, transparent 70%);
+      opacity: .45;
+      pointer-events: none;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: -100px;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(39,84,108,.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    @media (min-width: 768px) {
+      .hero-inner { grid-template-columns: 1fr 1fr; }
+    }
+
+    .hero-text { animation: fadeUp .7s ease both; }
+
+    .hero-kicker {
+      font-size: .8rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--color-acento-f);
+      margin-bottom: 1rem;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 6vw, 4.2rem);
+      line-height: 1.1;
+      color: var(--color-principal);
+      margin-bottom: 1.4rem;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--color-acento-f);
+    }
+
+    .hero-desc {
+      font-size: 1.08rem;
+      color: var(--color-text-muted);
+      max-width: 48ch;
+      margin-bottom: 2.2rem;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .9rem 2rem;
+      background: var(--color-principal);
+      color: #fff;
+      border-radius: 100px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform .2s, box-shadow .2s;
+      box-shadow: 0 4px 20px rgba(39,84,108,.3);
+    }
+
+    .hero-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(39,84,108,.4);
+    }
+
+    .hero-cta svg { width: 18px; height: 18px; }
+
+    /* Widget de horas flotante */
+    .hero-visual {
+      display: flex;
+      justify-content: center;
+      animation: fadeUp .7s .15s ease both;
+    }
+
+    .hours-card {
+      background: var(--color-white);
+      border-radius: var(--radius);
+      padding: 2rem;
+      box-shadow: var(--shadow-lg);
+      width: min(100%, 340px);
+      position: relative;
+    }
+
+    .hours-card .card-label {
+      font-size: .78rem;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: .5rem;
+    }
+
+    .hours-card .hours-big {
+      font-family: var(--font-display);
+      font-size: 5rem;
+      font-weight: 700;
+      color: var(--color-principal);
+      line-height: 1;
+    }
+
+    .hours-card .hours-sub {
+      font-size: .9rem;
+      color: var(--color-text-muted);
+      margin-top: .3rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .35rem .75rem;
+      border-radius: 100px;
+      font-size: .8rem;
+      font-weight: 500;
+    }
+
+    .pill .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .pill--sleep  { background: rgba(39,84,108,.1);  color: var(--c-sleep);  }
+    .pill--study  { background: rgba(255,148,145,.15); color: #c94340; }
+    .pill--screen { background: rgba(255,204,201,.4); color: #c94340; }
+    .pill--free   { background: rgba(168,213,162,.3); color: #3a7a35; }
+
+    .pill--sleep  .dot { background: var(--c-sleep); }
+    .pill--study  .dot { background: var(--c-study); }
+    .pill--screen .dot { background: var(--color-acento-f); }
+    .pill--free   .dot { background: var(--c-free); }
+
+    /* ============================================================
+       SECCIÓN CALCULADORA
+    ============================================================ */
+    .calc-section {
+      padding: clamp(3rem, 8vw, 6rem) 0;
+    }
+
+    .calc-section .section-header {
+      margin-bottom: 3rem;
+    }
+
+    .calc-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    @media (min-width: 900px) {
+      .calc-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* Grupos de inputs */
+    .input-group {
+      background: var(--color-white);
+      border-radius: var(--radius);
+      padding: 2rem;
+      box-shadow: var(--shadow);
+    }
+
+    .input-group h3 {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      color: var(--color-principal);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+
+    .input-group h3 .icon {
+      font-size: 1.3rem;
+    }
+
+    .field {
+      margin-bottom: 1.4rem;
+    }
+
+    .field:last-child { margin-bottom: 0; }
+
+    .field label {
+      display: block;
+      font-size: .88rem;
+      font-weight: 500;
+      color: var(--color-text);
+      margin-bottom: .4rem;
+    }
+
+    .field .hint {
+      font-size: .78rem;
+      color: var(--color-text-muted);
+      margin-top: .3rem;
+    }
+
+    .range-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      flex: 1;
+      height: 6px;
+      border-radius: 10px;
+      background: var(--color-fondo);
+      outline: none;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--color-principal);
+      border: 3px solid #fff;
+      box-shadow: 0 2px 8px rgba(39,84,108,.25);
+      cursor: pointer;
+      transition: transform .15s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--color-principal);
+      border: 3px solid #fff;
+      box-shadow: 0 2px 8px rgba(39,84,108,.25);
+      cursor: pointer;
+    }
+
+    .range-value {
+      min-width: 2.8rem;
+      text-align: right;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--color-principal);
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: .65rem 1rem;
+      border: 1.5px solid rgba(39,84,108,.2);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: var(--color-text);
+      background: var(--color-neutral);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--color-principal);
+      box-shadow: 0 0 0 3px rgba(39,84,108,.12);
+    }
+
+    /* Botón calcular */
+    .btn-calc {
+      display: block;
+      width: 100%;
+      margin-top: 2rem;
+      padding: 1rem 2rem;
+      background: var(--color-principal);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--font-body);
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s, background .2s;
+      box-shadow: 0 4px 20px rgba(39,84,108,.3);
+    }
+
+    .btn-calc:hover {
+      background: #1e4357;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(39,84,108,.4);
+    }
+
+    .btn-calc:active { transform: translateY(0); }
+
+    /* ============================================================
+       SECCIÓN RESULTADOS
+    ============================================================ */
+    .results-section {
+      padding: clamp(3rem, 8vw, 6rem) 0;
+      background: var(--color-white);
+      display: none; /* oculto hasta calcular */
+    }
+
+    .results-section.visible { display: block; }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1.2rem;
+      margin-top: 2.5rem;
+    }
+
+    .result-card {
+      background: var(--color-neutral);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .result-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+    }
+
+    .result-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+    }
+
+    .result-card.sleep::before  { background: var(--c-sleep); }
+    .result-card.study::before  { background: var(--c-study); }
+    .result-card.transit::before{ background: var(--c-transit); }
+    .result-card.screen::before { background: var(--color-acento-f); }
+    .result-card.free::before   { background: var(--c-free); }
+    .result-card.total::before  { background: var(--color-principal); }
+
+    .result-card .rc-label {
+      font-size: .78rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: .4rem;
+    }
+
+    .result-card .rc-value {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--color-principal);
+      line-height: 1;
+    }
+
+    .result-card .rc-unit {
+      font-family: var(--font-body);
+      font-size: .85rem;
+      font-weight: 400;
+      color: var(--color-text-muted);
+    }
+
+    .result-card .rc-pct {
+      font-size: .82rem;
+      color: var(--color-text-muted);
+      margin-top: .3rem;
+    }
+
+    /* Tiempo libre: énfasis especial */
+    .result-card.free {
+      background: linear-gradient(135deg, rgba(168,213,162,.2), rgba(168,213,162,.05));
+      border: 1.5px solid rgba(168,213,162,.5);
+    }
+
+    .result-card.free .rc-value { color: #2e7a29; }
+
+    /* ============================================================
+       SECCIÓN GRÁFICO
+    ============================================================ */
+    .chart-section {
+      padding: clamp(3rem, 8vw, 6rem) 0;
+      background: var(--color-fondo);
+      display: none;
+    }
+
+    .chart-section.visible { display: block; }
+
+    .chart-wrapper {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 3rem;
+      align-items: center;
+      margin-top: 2.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .chart-wrapper { grid-template-columns: 1fr 1fr; }
+    }
+
+    .chart-canvas-wrap {
+      position: relative;
+      max-width: 380px;
+      margin-inline: auto;
+    }
+
+    .chart-center-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .chart-center-text .ct-hours {
+      font-family: var(--font-display);
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--color-principal);
+      line-height: 1;
+    }
+
+    .chart-center-text .ct-label {
+      font-size: .78rem;
+      color: var(--color-text-muted);
+    }
+
+    /* Leyenda personalizada */
+    .chart-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .legend-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend-info { flex: 1; }
+
+    .legend-name {
+      font-weight: 500;
+      font-size: .92rem;
+    }
+
+    .legend-hours {
+      font-size: .82rem;
+      color: var(--color-text-muted);
+    }
+
+    .legend-bar-wrap {
+      width: 80px;
+    }
+
+    .legend-bar {
+      height: 5px;
+      border-radius: 10px;
+      background: currentColor;
+      opacity: .7;
+      transition: width .6s ease;
+    }
+
+    /* ============================================================
+       SECCIÓN FEEDBACK
+    ============================================================ */
+    .feedback-section {
+      padding: clamp(3rem, 8vw, 6rem) 0;
+      background: var(--color-white);
+      display: none;
+    }
+
+    .feedback-section.visible { display: block; }
+
+    .feedback-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      margin-top: 2.5rem;
+    }
+
+    .feedback-card {
+      display: flex;
+      gap: 1.2rem;
+      align-items: flex-start;
+      background: var(--color-neutral);
+      border-radius: var(--radius);
+      padding: 1.4rem 1.6rem;
+      border-left: 4px solid var(--color-principal);
+      animation: fadeUp .5s ease both;
+    }
+
+    .feedback-card.warn {
+      border-left-color: var(--color-acento-f);
+      background: rgba(255,148,145,.06);
+    }
+
+    .feedback-card.ok {
+      border-left-color: var(--c-free);
+      background: rgba(168,213,162,.08);
+    }
+
+    .feedback-card .fc-icon {
+      font-size: 1.6rem;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .feedback-card .fc-content h4 {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      color: var(--color-principal);
+      margin-bottom: .3rem;
+    }
+
+    .feedback-card.warn .fc-content h4 { color: #c94340; }
+    .feedback-card.ok   .fc-content h4 { color: #2e7a29; }
+
+    .feedback-card .fc-content p {
+      font-size: .92rem;
+      color: var(--color-text-muted);
+      line-height: 1.6;
+    }
+
+    /* ============================================================
+       REFLEXIÓN FINAL
+    ============================================================ */
+    .reflection-section {
+      padding: clamp(4rem, 10vw, 8rem) 0;
+      background: var(--color-principal);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .reflection-section::before {
+      content: '';
+      position: absolute;
+      top: -150px;
+      right: -150px;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.04);
+      pointer-events: none;
+    }
+
+    .reflection-inner {
+      position: relative;
+      max-width: 700px;
+    }
+
+    .reflection-section .tag {
+      background: rgba(255,204,201,.25);
+      color: var(--color-acento-s);
+    }
+
+    .reflection-section .section-title { color: #fff; margin-top: .8rem; }
+
+    .reflection-section p {
+      font-size: 1.08rem;
+      color: rgba(255,255,255,.75);
+      margin-bottom: 1rem;
+    }
+
+    .reflection-section strong { color: #fff; }
+
+    .rapsi-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .8rem;
+      margin-top: 2.5rem;
+      padding: 1rem 1.5rem;
+      background: rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,.15);
+    }
+
+    .rapsi-badge .rb-icon {
+      font-size: 1.8rem;
+    }
+
+    .rapsi-badge .rb-text {
+      font-size: .88rem;
+      color: rgba(255,255,255,.8);
+    }
+
+    .rapsi-badge .rb-text strong {
+      display: block;
+      font-size: 1rem;
+      color: #fff;
+    }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    footer {
+      background: #1a2e38;
+      color: rgba(255,255,255,.5);
+      text-align: center;
+      padding: 1.8rem 1rem;
+      font-size: .82rem;
+    }
+
+    footer a { color: rgba(255,255,255,.7); }
+
+    /* ============================================================
+       BARRA DE PROGRESO SUPERIOR
+    ============================================================ */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: var(--color-acento-f);
+      z-index: 200;
+      width: 0%;
+      transition: width .1s linear;
+    }
+
+    /* ============================================================
+       ANIMACIONES
+    ============================================================ */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes countUp {
+      from { opacity: 0; transform: scale(.8); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .animate-count { animation: countUp .4s ease both; }
+
+    /* ============================================================
+       RESPONSIVE AJUSTES
+    ============================================================ */
+    @media (max-width: 767px) {
+      .nav-links { display: none; }
+
+      .hours-card { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra de progreso al hacer scroll -->
+  <div id="progress-bar"></div>
+
+  <!-- ======================================================
+       HEADER
+  ====================================================== -->
+  <header>
+    <div class="container">
+      <nav>
+        <a class="nav-brand" href="#">
+          <div class="logo-icon">⏱</div>
+          <span>RAPsi · UNAL</span>
+        </a>
+        <ul class="nav-links">
+          <li><a href="#calculadora">Calculadora</a></li>
+          <li><a href="#resultados">Resultados</a></li>
+          <li><a href="#reflexion">Reflexión</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ======================================================
+       HERO
+  ====================================================== -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-inner">
+
+        <div class="hero-text">
+          <p class="hero-kicker">Bienestar estudiantil · 168 horas</p>
+          <h1 class="hero-title">
+            ¿En qué se te<br />
+            va la <em>semana</em>?
+          </h1>
+          <p class="hero-desc">
+            Cada semana tienes exactamente 168 horas. Entre el sueño, el estudio, el transporte
+            y la pantalla… ¿cuánto tiempo real te queda para <strong>ti</strong>?
+          </p>
+          <a href="#calculadora" class="hero-cta">
+            Descubrirlo ahora
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 5v14M5 12l7 7 7-7"/>
+            </svg>
+          </a>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hours-card">
+            <p class="card-label">Tu semana completa</p>
+            <div class="hours-big">168</div>
+            <p class="hours-sub">horas disponibles cada semana</p>
+            <div class="pill-row">
+              <span class="pill pill--sleep"><span class="dot"></span>Dormir</span>
+              <span class="pill pill--study"><span class="dot"></span>Estudiar</span>
+              <span class="pill pill--screen"><span class="dot"></span>Pantallas</span>
+              <span class="pill pill--free"><span class="dot"></span>Tiempo libre</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================
+       CALCULADORA
+  ====================================================== -->
+  <section class="calc-section" id="calculadora">
+    <div class="container">
+      <div class="section-header">
+        <span class="tag">Paso 1</span>
+        <h2 class="section-title">Cuéntame sobre tu semana</h2>
+        <p class="section-sub">
+          Completa los campos con tus hábitos habituales. No hay respuestas correctas o incorrectas.
+        </p>
+      </div>
+
+      <div class="calc-grid">
+
+        <!-- Grupo 1: Necesidades básicas -->
+        <div class="input-group">
+          <h3><span class="icon">🌙</span> Necesidades básicas</h3>
+
+          <div class="field">
+            <label for="sleep">Horas de sueño por día</label>
+            <div class="range-wrapper">
+              <input type="range" id="sleep" min="4" max="12" step="0.5" value="7"
+                     oninput="syncRange('sleep')" />
+              <span class="range-value" id="sleep-val">7 h</span>
+            </div>
+            <p class="hint">Recomendado: 7 – 9 horas para adultos jóvenes</p>
+          </div>
+
+          <div class="field">
+            <label for="food">Tiempo dedicado a comidas por día (horas)</label>
+            <div class="range-wrapper">
+              <input type="range" id="food" min="0.5" max="4" step="0.5" value="1.5"
+                     oninput="syncRange('food')" />
+              <span class="range-value" id="food-val">1.5 h</span>
+            </div>
+            <p class="hint">Incluye preparación, consumo y descanso post-comida</p>
+          </div>
+
+          <div class="field">
+            <label for="transit">Tiempo de transporte por día (horas)</label>
+            <div class="range-wrapper">
+              <input type="range" id="transit" min="0" max="5" step="0.5" value="1"
+                     oninput="syncRange('transit')" />
+              <span class="range-value" id="transit-val">1 h</span>
+            </div>
+            <p class="hint">Trayecto al campus y de regreso</p>
+          </div>
+        </div>
+
+        <!-- Grupo 2: Vida académica y digital -->
+        <div class="input-group">
+          <h3><span class="icon">📚</span> Vida académica y digital</h3>
+
+          <div class="field">
+            <label for="credits">Número de créditos académicos este semestre</label>
+            <input type="number" id="credits" min="0" max="24" value="16"
+                   placeholder="Ej: 16" />
+            <p class="hint">
+              Cada crédito equivale a <strong id="hpc-label">2 h</strong> semanales de dedicación total
+              (clase + estudio independiente)
+            </p>
+          </div>
+
+          <div class="field" style="margin-top: 1.6rem;">
+            <label for="screen">Uso de pantalla recreativa por día (horas)</label>
+            <div class="range-wrapper">
+              <input type="range" id="screen" min="0" max="10" step="0.5" value="3"
+                     oninput="syncRange('screen')" />
+              <span class="range-value" id="screen-val">3 h</span>
+            </div>
+            <p class="hint">Redes sociales, streaming, videojuegos, etc. (sin contar estudio)</p>
+          </div>
+
+          <div class="field">
+            <label for="other">Otras actividades fijas por semana (horas)</label>
+            <input type="number" id="other" min="0" max="40" value="0"
+                   placeholder="Ej: 5 (trabajo, deporte organizado...)" />
+            <p class="hint">Trabajo, práctica deportiva con horario fijo, etc.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Botón calcular -->
+      <button class="btn-calc" onclick="calcular()">
+        Calcular mi tiempo disponible ⟶
+      </button>
+
+    </div>
+  </section>
+
+  <!-- ======================================================
+       RESULTADOS
+  ====================================================== -->
+  <section class="results-section" id="resultados">
+    <div class="container">
+      <span class="tag">Tus resultados</span>
+      <h2 class="section-title">Así se ve tu semana</h2>
+      <p class="section-sub">
+        Estas son las 168 horas distribuidas según lo que nos contaste.
+      </p>
+
+      <div class="results-grid">
+        <div class="result-card sleep">
+          <div class="rc-label">Dormir</div>
+          <div class="rc-value" id="res-sleep">–</div>
+          <div class="rc-unit">horas / semana</div>
+          <div class="rc-pct" id="res-sleep-pct"></div>
+        </div>
+        <div class="result-card study">
+          <div class="rc-label">Estudio</div>
+          <div class="rc-value" id="res-study">–</div>
+          <div class="rc-unit">horas / semana</div>
+          <div class="rc-pct" id="res-study-pct"></div>
+        </div>
+        <div class="result-card transit">
+          <div class="rc-label">Transporte</div>
+          <div class="rc-value" id="res-transit">–</div>
+          <div class="rc-unit">horas / semana</div>
+          <div class="rc-pct" id="res-transit-pct"></div>
+        </div>
+        <div class="result-card">
+          <div class="rc-label">Comidas</div>
+          <div class="rc-value" id="res-food">–</div>
+          <div class="rc-unit">horas / semana</div>
+          <div class="rc-pct" id="res-food-pct"></div>
+        </div>
+        <div class="result-card screen">
+          <div class="rc-label">Pantallas</div>
+          <div class="rc-value" id="res-screen">–</div>
+          <div class="rc-unit">horas / semana</div>
+          <div class="rc-pct" id="res-screen-pct"></div>
+        </div>
+        <div class="result-card">
+          <div class="rc-label">Otras activ.</div>
+          <div class="rc-value" id="res-other">–</div>
+          <div class="rc-unit">horas / semana</div>
+          <div class="rc-pct" id="res-other-pct"></div>
+        </div>
+        <div class="result-card free">
+          <div class="rc-label">⭐ Tiempo libre real</div>
+          <div class="rc-value" id="res-free">–</div>
+          <div class="rc-unit">horas / semana</div>
+          <div class="rc-pct" id="res-free-pct"></div>
+        </div>
+        <div class="result-card total">
+          <div class="rc-label">Total ocupado</div>
+          <div class="rc-value" id="res-total">–</div>
+          <div class="rc-unit">horas / semana</div>
+          <div class="rc-pct" id="res-total-pct"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ======================================================
+       GRÁFICO
+  ====================================================== -->
+  <section class="chart-section" id="grafico">
+    <div class="container">
+      <span class="tag">Visualización</span>
+      <h2 class="section-title">Tu semana en colores</h2>
+
+      <div class="chart-wrapper">
+
+        <!-- Gráfico doughnut -->
+        <div class="chart-canvas-wrap">
+          <canvas id="weekChart" width="380" height="380"></canvas>
+          <div class="chart-center-text">
+            <div class="ct-hours" id="chart-center-h">168</div>
+            <div class="ct-label">horas totales</div>
+          </div>
+        </div>
+
+        <!-- Leyenda personalizada -->
+        <div class="chart-legend" id="chart-legend">
+          <!-- Generada por JS -->
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================
+       FEEDBACK
+  ====================================================== -->
+  <section class="feedback-section" id="feedback">
+    <div class="container">
+      <span class="tag">Reflexión personalizada</span>
+      <h2 class="section-title">Lo que tus números nos dicen</h2>
+      <div class="feedback-cards" id="feedback-cards">
+        <!-- Generado por JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================
+       REFLEXIÓN FINAL
+  ====================================================== -->
+  <section class="reflection-section" id="reflexion">
+    <div class="container">
+      <div class="reflection-inner">
+        <span class="tag">Para cerrar</span>
+        <h2 class="section-title">El tiempo es tuyo</h2>
+        <p>
+          No existe una distribución perfecta. Pero sí existe una que te permita
+          <strong>estudiar bien, descansar de verdad y seguir siendo tú</strong>.
+        </p>
+        <p>
+          Si sientes que el tiempo se te escapa y que tu bienestar queda en último lugar,
+          recuerda que en la UNAL hay espacios creados para acompañarte.
+          <strong>No tienes que resolver todo solo/a.</strong>
+        </p>
+        <p>
+          Esta herramienta es un punto de partida, no un juicio.
+          Úsala para conocerte mejor y tomar decisiones más conscientes sobre cómo invertir
+          tus 168 horas cada semana.
+        </p>
+
+        <div class="rapsi-badge">
+          <div class="rb-icon">🧠</div>
+          <div class="rb-text">
+            <strong>RAPsi · Bienestar Universitario UNAL</strong>
+            Red de Apoyo Psicosocial para la comunidad universitaria
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================
+       FOOTER
+  ====================================================== -->
+  <footer>
+    <p>
+      Elaborado por <strong>RAPsi</strong> · Universidad Nacional de Colombia ·
+      Herramienta de autocuidado y bienestar estudiantil
+    </p>
+  </footer>
+
+  <!-- ======================================================
+       JAVASCRIPT
+  ====================================================== -->
+  <script>
+    /* ----------------------------------------------------------
+       CONFIGURACIÓN (editable)
+    ---------------------------------------------------------- */
+    const CONFIG = {
+      totalHoras: 168,           // horas en una semana
+      horasPorCredito: 2,        // 1 crédito = N horas semanales
+      diasSemana: 7,
+    };
+
+    /* ----------------------------------------------------------
+       HELPERS: sincronizar sliders con etiqueta de valor
+    ---------------------------------------------------------- */
+    function syncRange(id) {
+      const input = document.getElementById(id);
+      const label = document.getElementById(id + '-val');
+      const val   = parseFloat(input.value);
+      label.textContent = val % 1 === 0 ? `${val} h` : `${val} h`;
+    }
+
+    /* ----------------------------------------------------------
+       HELPERS: formatear números
+    ---------------------------------------------------------- */
+    function fmt(n) {
+      return Number.isInteger(n) ? n.toString() : n.toFixed(1);
+    }
+
+    function pct(n) {
+      return ((n / CONFIG.totalHoras) * 100).toFixed(1) + '%';
+    }
+
+    /* ----------------------------------------------------------
+       INSTANCIA DEL GRÁFICO (guardada para poder actualizarla)
+    ---------------------------------------------------------- */
+    let weekChart = null;
+
+    /* ----------------------------------------------------------
+       FUNCIÓN PRINCIPAL: CALCULAR
+    ---------------------------------------------------------- */
+    function calcular() {
+      // Leer valores
+      const sleep   = parseFloat(document.getElementById('sleep').value)   || 7;
+      const food    = parseFloat(document.getElementById('food').value)     || 1.5;
+      const transit = parseFloat(document.getElementById('transit').value)  || 1;
+      const credits = parseFloat(document.getElementById('credits').value)  || 0;
+      const screen  = parseFloat(document.getElementById('screen').value)   || 0;
+      const other   = parseFloat(document.getElementById('other').value)    || 0;
+
+      // Cálculos semanales
+      const hSleep   = sleep   * CONFIG.diasSemana;
+      const hFood    = food    * CONFIG.diasSemana;
+      const hTransit = transit * CONFIG.diasSemana;
+      const hStudy   = credits * CONFIG.horasPorCredito;
+      const hScreen  = screen  * CONFIG.diasSemana;
+      const hOther   = other;
+
+      const hOccupied = hSleep + hFood + hTransit + hStudy + hScreen + hOther;
+      const hFree     = Math.max(0, CONFIG.totalHoras - hOccupied);
+
+      // Mostrar secciones ocultas con animación
+      ['resultados', 'grafico', 'feedback'].forEach(id => {
+        const el = document.getElementById(id);
+        // Mapeo a clase CSS
+        const secEl = el.closest ? el : document.getElementById(id);
+        // Buscar la sección que contiene el id como ID
+        const sections = document.querySelectorAll('section');
+        sections.forEach(s => {
+          if (s.id === id ||
+              s.querySelector('#' + id)) {
+            s.classList.add('visible');
+          }
+        });
+      });
+
+      // También mostrar directamente por ID de sección
+      document.querySelector('.results-section').classList.add('visible');
+      document.querySelector('.chart-section').classList.add('visible');
+      document.querySelector('.feedback-section').classList.add('visible');
+
+      // Actualizar tarjetas de resultado
+      setResult('sleep',   hSleep);
+      setResult('study',   hStudy);
+      setResult('transit', hTransit);
+      setResult('food',    hFood);
+      setResult('screen',  hScreen);
+      setResult('other',   hOther);
+      setResult('free',    hFree);
+      setResult('total',   hOccupied);
+
+      // Gráfico
+      renderChart({ hSleep, hStudy, hTransit, hFood, hScreen, hOther, hFree });
+
+      // Feedback
+      renderFeedback({ hSleep, hStudy, hTransit, hFood, hScreen, hOther, hFree, hOccupied, credits, sleep });
+
+      // Scroll suave a resultados
+      setTimeout(() => {
+        document.querySelector('.results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
+    }
+
+    function setResult(key, value) {
+      const valEl = document.getElementById('res-' + key);
+      const pctEl = document.getElementById('res-' + key + '-pct');
+      if (valEl) {
+        valEl.textContent = fmt(value);
+        valEl.classList.remove('animate-count');
+        void valEl.offsetWidth; // reflow
+        valEl.classList.add('animate-count');
+      }
+      if (pctEl) {
+        pctEl.textContent = pct(value) + ' de la semana';
+      }
+    }
+
+    /* ----------------------------------------------------------
+       GRÁFICO DOUGHNUT CON CHART.JS
+    ---------------------------------------------------------- */
+    function renderChart({ hSleep, hStudy, hTransit, hFood, hScreen, hOther, hFree }) {
+      const ctx = document.getElementById('weekChart').getContext('2d');
+
+      const data = {
+        labels: ['Dormir', 'Estudio', 'Transporte', 'Comidas', 'Pantallas', 'Otras actividades', 'Tiempo libre'],
+        datasets: [{
+          data: [hSleep, hStudy, hTransit, hFood, hScreen, hOther, hFree],
+          backgroundColor: [
+            '#27546c',  // sleep
+            '#ff9491',  // study
+            '#5a9bb5',  // transit
+            '#a8c4d4',  // food
+            '#ffccc9',  // screen
+            '#c9b8a8',  // other
+            '#a8d5a2',  // free
+          ],
+          borderWidth: 3,
+          borderColor: '#ffffff',
+          hoverBorderWidth: 4,
+          hoverOffset: 8,
+        }]
+      };
+
+      if (weekChart) {
+        weekChart.data = data;
+        weekChart.update('active');
+      } else {
+        weekChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: data,
+          options: {
+            cutout: '65%',
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => {
+                    const val = ctx.parsed;
+                    const pctV = ((val / CONFIG.totalHoras) * 100).toFixed(1);
+                    return ` ${fmt(val)} h (${pctV}%)`;
+                  }
+                },
+                backgroundColor: '#1a2e38',
+                titleColor: '#fff',
+                bodyColor: 'rgba(255,255,255,.8)',
+                padding: 12,
+                cornerRadius: 10,
+              }
+            },
+            animation: { animateRotate: true, duration: 900, easing: 'easeInOutQuart' },
+          }
+        });
+      }
+
+      // Leyenda personalizada
+      const legendEl = document.getElementById('chart-legend');
+      const items = [
+        { label: 'Dormir',           value: hSleep,   color: '#27546c' },
+        { label: 'Estudio',          value: hStudy,   color: '#ff9491' },
+        { label: 'Transporte',       value: hTransit, color: '#5a9bb5' },
+        { label: 'Comidas',          value: hFood,    color: '#a8c4d4' },
+        { label: 'Pantallas',        value: hScreen,  color: '#ffccc9' },
+        { label: 'Otras activ.',     value: hOther,   color: '#c9b8a8' },
+        { label: 'Tiempo libre',     value: hFree,    color: '#a8d5a2' },
+      ];
+
+      legendEl.innerHTML = items.map(item => {
+        const barW = Math.round((item.value / CONFIG.totalHoras) * 100);
+        return `
+          <div class="legend-item">
+            <div class="legend-dot" style="background:${item.color}"></div>
+            <div class="legend-info">
+              <div class="legend-name">${item.label}</div>
+              <div class="legend-hours">${fmt(item.value)} h · ${pct(item.value)}</div>
+            </div>
+            <div class="legend-bar-wrap">
+              <div class="legend-bar" style="width:${barW}%; background:${item.color}"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* ----------------------------------------------------------
+       FEEDBACK INTELIGENTE
+    ---------------------------------------------------------- */
+    function renderFeedback({ hSleep, hStudy, hTransit, hFood, hScreen, hOther, hFree, hOccupied, credits, sleep }) {
+      const cards = [];
+
+      // --- Tiempo libre ---
+      if (hFree < 0) {
+        cards.push({
+          type: 'warn',
+          icon: '🚨',
+          title: 'Tu semana está sobreocupada',
+          body: `Según tus datos, el tiempo ocupado supera las 168 horas disponibles.
+                 Esto nos indica que algo puede estar generando mucha presión.
+                 Te invitamos a revisar si hay actividades que podrías ajustar o priorizar.
+                 Recuerda: no todo lo urgente es importante.`
+        });
+      } else if (hFree < 10) {
+        cards.push({
+          type: 'warn',
+          icon: '⚠️',
+          title: 'Tu tiempo libre es muy reducido',
+          body: `Solo cuentas con ${fmt(hFree)} horas libres a la semana, que es menos de
+                 lo que se necesita para un descanso real y significativo.
+                 El descanso no es un lujo: es parte esencial de un buen rendimiento académico y emocional.
+                 ¿Hay alguna actividad que puedas reducir aunque sea un poco?`
+        });
+      } else if (hFree < 20) {
+        cards.push({
+          type: 'info',
+          icon: '💡',
+          title: 'Tienes algo de tiempo libre, pero ajustado',
+          body: `Cuentas con ${fmt(hFree)} horas libres semanales. No está mal, pero vale la pena
+                 cuidar que ese tiempo realmente te recargue: naturaleza, conexión social, hobbies,
+                 o simplemente no hacer nada. El ocio consciente también es productivo.`
+        });
+      } else {
+        cards.push({
+          type: 'ok',
+          icon: '✅',
+          title: `¡Tienes ${fmt(hFree)} horas libres a la semana!`,
+          body: `Eso es una señal positiva. Aprovecha ese tiempo para actividades que te nutran
+                 más allá del estudio: deporte, cultura, conexión con amigos/as, o simplemente
+                 descanso sin culpa. El equilibrio también es un logro.`
+        });
+      }
+
+      // --- Sueño ---
+      if (sleep < 6) {
+        cards.push({
+          type: 'warn',
+          icon: '😴',
+          title: 'Estás durmiendo muy poco',
+          body: `${sleep} horas de sueño al día está por debajo del mínimo recomendado (7-9 h).
+                 La privación de sueño afecta la memoria, la concentración y el estado de ánimo.
+                 Dormir más no es perder el tiempo: es invertirlo en tu capacidad de aprender.`
+        });
+      } else if (sleep >= 9) {
+        cards.push({
+          type: 'info',
+          icon: '🛌',
+          title: 'Duermes bastante, ¿es un descanso reparador?',
+          body: `Dormir más de 9 horas a veces puede ser señal de agotamiento profundo o de
+                 algo que vale la pena explorar. Si te despiertas cansado/a o duermes para
+                 "escapar", puede ser útil conversarlo con alguien de confianza o un profesional.`
+        });
+      }
+
+      // --- Pantallas ---
+      if (hScreen > 35) {
+        cards.push({
+          type: 'warn',
+          icon: '📱',
+          title: 'El uso de pantallas es muy alto',
+          body: `Más de ${fmt(hScreen)} horas semanales en pantallas recreativas puede dificultar
+                 el descanso, aumentar la ansiedad y reducir la calidad del sueño.
+                 Pequeños cambios hacen diferencia: modo sin interrupciones antes de dormir,
+                 pausas activas, o remplazar 30 minutos de scroll por algo que te mueva el cuerpo.`
+        });
+      } else if (hScreen > 21) {
+        cards.push({
+          type: 'info',
+          icon: '📲',
+          title: 'Atención al tiempo en pantalla',
+          body: `Llevas ${fmt(hScreen)} h semanales en pantallas recreativas. No es alarmante,
+                 pero es un buen momento para preguntarte: ¿ese tiempo te recarga o te agota?
+                 No toda pantalla es igual: hay contenidos que nutren y otros que sólo
+                 consumen tu energía.`
+        });
+      }
+
+      // --- Transporte ---
+      if (hTransit > 14) {
+        cards.push({
+          type: 'warn',
+          icon: '🚌',
+          title: 'Inviertes mucho tiempo en transporte',
+          body: `${fmt(hTransit)} horas semanales en desplazamiento es una carga significativa.
+                 Puedes convertir ese tiempo en algo valioso: podcasts, música, lectura ligera,
+                 meditación o simplemente observar el entorno. También podrías explorar
+                 si hay opciones de clases virtuales o grupos de estudio cerca de casa.`
+        });
+      }
+
+      // --- Carga académica ---
+      if (credits > 18) {
+        cards.push({
+          type: 'warn',
+          icon: '📖',
+          title: 'Tu carga académica es alta',
+          body: `${credits} créditos implican aproximadamente ${credits * CONFIG.horasPorCredito} horas
+                 de dedicación semanal. Eso es una carga considerable. Asegúrate de que el resto
+                 de tu tiempo esté bien organizado para no llegar al agotamiento. Si sientes que
+                 es insostenible, hablar con tu asesor/a académico/a puede ayudar.`
+        });
+      }
+
+      // --- Mensaje positivo de cierre siempre ---
+      cards.push({
+        type: 'info',
+        icon: '🌱',
+        title: 'Pequeños cambios, grandes diferencias',
+        body: `El autocuidado no requiere transformaciones radicales de un día para otro.
+               Identifica una sola cosa que puedas ajustar esta semana: ir a dormir 30 minutos
+               antes, caminar en un parque, desconectarte del celular durante la cena.
+               Eso ya es un acto de bienestar.`
+      });
+
+      // Renderizar
+      const container = document.getElementById('feedback-cards');
+      container.innerHTML = cards.map((c, i) => `
+        <div class="feedback-card ${c.type}" style="animation-delay:${i * 0.1}s">
+          <div class="fc-icon">${c.icon}</div>
+          <div class="fc-content">
+            <h4>${c.title}</h4>
+            <p>${c.body}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* ----------------------------------------------------------
+       BARRA DE PROGRESO DE SCROLL
+    ---------------------------------------------------------- */
+    window.addEventListener('scroll', () => {
+      const scrollTop   = document.documentElement.scrollTop || document.body.scrollTop;
+      const scrollTotal = document.documentElement.scrollHeight - window.innerHeight;
+      const progress    = scrollTotal > 0 ? (scrollTop / scrollTotal) * 100 : 0;
+      document.getElementById('progress-bar').style.width = progress + '%';
+    });
+
+    /* ----------------------------------------------------------
+       INICIALIZACIÓN: sincronizar labels de rangos al cargar
+    ---------------------------------------------------------- */
+    document.addEventListener('DOMContentLoaded', () => {
+      ['sleep', 'food', 'transit', 'screen'].forEach(syncRange);
+
+      // Mostrar la regla de créditos en el hint
+      document.getElementById('hpc-label').textContent =
+        CONFIG.horasPorCredito + ' h';
+    });
+  </script>
+
+</body>
+</html>
+```
