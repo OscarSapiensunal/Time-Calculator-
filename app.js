@@ -5,14 +5,6 @@
 ============================================================ */
 
 /* ----------------------------------------------------------
-   SUPABASE — conexión al backend
-   Completa las cadenas vacías con los valores de tu proyecto.
----------------------------------------------------------- */
-const SUPABASE_URL      = "https://gczrxdubzzuiuxuxvxsm.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_yJ_cSM-COnRQfZG7US5c8g_26o8SYS1";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-/* ----------------------------------------------------------
    CONFIGURACIÓN (editable sin tocar otra lógica)
    horasPorCredito: política académica UNAL vigente (1 cr = 3 h)
 ---------------------------------------------------------- */
@@ -21,6 +13,14 @@ const CONFIG = {
   horasPorCredito: 3,
   diasSemana:      7,
 };
+
+/* ----------------------------------------------------------
+   SUPABASE — conexión al backend
+   Completa las cadenas con los valores de tu proyecto Supabase.
+---------------------------------------------------------- */
+const SUPABASE_URL      = "https://gczrxdubzzuiuxuxvxsm.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yJ_cSM-COnRQfZG7US5c8g_26o8SYS1";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ----------------------------------------------------------
    HELPER: sincronizar slider con su etiqueta de valor
@@ -214,14 +214,15 @@ function calcular() {
    usuario_id es null literal para evitar errores de tipo UUID.
 ---------------------------------------------------------- */
 async function saveToSupabase(data) {
-  const { error } = await supabase
-    .from('registros_bienestar')
-    .insert([data]);
+  try {
+    const { error } = await supabase
+      .from('registros_bienestar')
+      .insert([data]);
 
-  if (error) {
-    console.error('[RAPsi] Error al guardar registro:', error.message);
-  } else {
+    if (error) throw error;
     console.log('[RAPsi] Registro de bienestar guardado correctamente.');
+  } catch (err) {
+    console.error('[RAPsi] Error al guardar registro:', err.message);
   }
 }
 
