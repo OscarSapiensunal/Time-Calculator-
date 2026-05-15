@@ -87,11 +87,12 @@
         <p class="section-sub">
           Completa los campos con tus hábitos habituales. No hay respuestas correctas o incorrectas.
         </p>
-        <div class="hours-counter" id="hours-counter">
-          <span class="hc-label">Horas registradas</span>
-          <div class="hc-value"><span id="hc-used">0</span><span class="hc-of"> / 168 h</span></div>
-          <div class="hc-bar-wrap"><div class="hc-bar" id="hc-bar"></div></div>
-        </div>
+      </div>
+
+      <div class="hours-counter" id="hours-counter">
+        <span class="hc-label">Horas registradas</span>
+        <div class="hc-value"><span id="hc-used">0</span><span class="hc-of"> / 168 h</span></div>
+        <div class="hc-bar-wrap"><div class="hc-bar" id="hc-bar"></div></div>
       </div>
 
       <div class="calc-grid">
@@ -190,6 +191,11 @@
         <div class="input-group group--bienestar">
           <h3><span class="icon">🌱</span> Tiempo de bienestar activo y ocio</h3>
 
+          <div class="note-box" style="margin-bottom: 1.2rem;">
+            <span class="note-icon">⚠️</span>
+            <p><strong>¡Atención!</strong> Si realizas dos actividades al mismo tiempo (ej: usar el celular mientras te transportas, o escuchar un podcast mientras haces ejercicio), regístralo solo en una categoría. No cuentes la misma hora dos veces para que tu balance de 168 horas sea real.</p>
+          </div>
+
           <div class="field">
             <label for="screen">Scrolling y pantallas recreativas por día (horas)</label>
             <div class="range-wrapper">
@@ -206,10 +212,6 @@
               <span class="range-value" id="physical_activity-val">2 h</span>
             </div>
             <p class="hint">Ejercicio, deporte, caminatas activas</p>
-            <div class="note-box">
-              <span class="note-icon">⚠️</span>
-              <p><strong>¡Ojo!</strong> Si te desplazas haciendo ejercicio (ej. bici, caminata al campus), regístralo solo en <strong>Transporte</strong> o solo aquí, pero no en ambos. Evita contar la misma hora dos veces.</p>
-            </div>
           </div>
 
           <div class="field">
@@ -267,11 +269,17 @@
           <div class="rc-unit">horas / semana</div>
           <div class="rc-pct" id="res-sleep-pct"></div>
         </div>
-        <div class="result-card study">
-          <div class="rc-label">Estudio</div>
-          <div class="rc-value" id="res-study">–</div>
+        <div class="result-card food">
+          <div class="rc-label">Comidas</div>
+          <div class="rc-value" id="res-food">–</div>
           <div class="rc-unit">horas / semana</div>
-          <div class="rc-pct" id="res-study-pct"></div>
+          <div class="rc-pct" id="res-food-pct"></div>
+        </div>
+        <div class="result-card grooming">
+          <div class="rc-label">Cuidado Personal</div>
+          <div class="rc-value" id="res-grooming">–</div>
+          <div class="rc-unit">horas / semana</div>
+          <div class="rc-pct" id="res-grooming-pct"></div>
         </div>
         <div class="result-card transit">
           <div class="rc-label">Transporte</div>
@@ -279,11 +287,17 @@
           <div class="rc-unit">horas / semana</div>
           <div class="rc-pct" id="res-transit-pct"></div>
         </div>
-        <div class="result-card">
-          <div class="rc-label">Comidas</div>
-          <div class="rc-value" id="res-food">–</div>
+        <div class="result-card study">
+          <div class="rc-label">Estudio</div>
+          <div class="rc-value" id="res-study">–</div>
           <div class="rc-unit">horas / semana</div>
-          <div class="rc-pct" id="res-food-pct"></div>
+          <div class="rc-pct" id="res-study-pct"></div>
+        </div>
+        <div class="result-card obligations">
+          <div class="rc-label">Otras Obligaciones</div>
+          <div class="rc-value" id="res-obligations">–</div>
+          <div class="rc-unit">horas / semana</div>
+          <div class="rc-pct" id="res-obligations-pct"></div>
         </div>
         <div class="result-card screen">
           <div class="rc-label">Pantallas</div>
@@ -291,11 +305,23 @@
           <div class="rc-unit">horas / semana</div>
           <div class="rc-pct" id="res-screen-pct"></div>
         </div>
-        <div class="result-card">
-          <div class="rc-label">Bienestar activo</div>
-          <div class="rc-value" id="res-other">–</div>
+        <div class="result-card physical">
+          <div class="rc-label">Deporte y Salud</div>
+          <div class="rc-value" id="res-physical">–</div>
           <div class="rc-unit">horas / semana</div>
-          <div class="rc-pct" id="res-other-pct"></div>
+          <div class="rc-pct" id="res-physical-pct"></div>
+        </div>
+        <div class="result-card social">
+          <div class="rc-label">Con los que quieres</div>
+          <div class="rc-value" id="res-social">–</div>
+          <div class="rc-unit">horas / semana</div>
+          <div class="rc-pct" id="res-social-pct"></div>
+        </div>
+        <div class="result-card hobby">
+          <div class="rc-label">Lo que te apasiona</div>
+          <div class="rc-value" id="res-hobby">–</div>
+          <div class="rc-unit">horas / semana</div>
+          <div class="rc-pct" id="res-hobby-pct"></div>
         </div>
         <div class="result-card free">
           <div class="rc-label">⭐ Tiempo libre real</div>
