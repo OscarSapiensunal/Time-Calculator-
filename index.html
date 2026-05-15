@@ -396,8 +396,8 @@
     </div>
   </footer>
 
-  <!-- SDK de Supabase (debe cargarse ANTES que app.js) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- SDK de Supabase UMD — expone window.supabase en el navegador -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
   <!-- Lógica de la aplicación (al final del body) -->
   <script src="app.js"></script>
