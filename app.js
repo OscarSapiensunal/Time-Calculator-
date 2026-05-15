@@ -5,6 +5,14 @@
 ============================================================ */
 
 /* ----------------------------------------------------------
+   SUPABASE — conexión al backend
+   Completa las cadenas vacías con los valores de tu proyecto.
+---------------------------------------------------------- */
+const SUPABASE_URL      = "https://gczrxdubzzuiuxuxvxsm.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_yJ_cSM-COnRQfZG7US5c8g_26o8SYS1";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ----------------------------------------------------------
    CONFIGURACIÓN (editable sin tocar otra lógica)
    horasPorCredito: política académica UNAL vigente (1 cr = 3 h)
 ---------------------------------------------------------- */
@@ -55,6 +63,7 @@ function calcular() {
   // --------------------------------------------------------
   const consentBox = document.getElementById('consent_accepted');
   if (!consentBox || !consentBox.checked) {
+    alert('Por favor acepta el tratamiento de datos (Ley 1581/2012) antes de continuar.');
     consentBox.closest('.consent-box').style.outline = '2px solid #ff9491';
     consentBox.focus();
     consentBox.closest('.consent-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -175,6 +184,45 @@ function calcular() {
     document.querySelector('.results-section')
       .scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 150);
+
+  // --------------------------------------------------------
+  // 9. GUARDAR EN SUPABASE (fire-and-forget, no bloquea la UI)
+  // --------------------------------------------------------
+  saveToSupabase({
+    usuario_id:     null,
+    sleep_h:        hSleep,
+    food_h:         hFood,
+    transit_h:      hTransit,
+    grooming_h:     hGrooming,
+    house_tasks_h:  hHouseTasks,
+    study_h:        hStudy,
+    other_h:        hOther,
+    screen_h:       hScreen,
+    physical_h:     hPhysical,
+    social_h:       hSocial,
+    creative_h:     hCreative,
+    mindful_h:      hMindful,
+    leisure_h:      hLeisure,
+    available_time: Math.max(0, tLibreNeto),
+    wellbeing_time: tBienestar,
+    occupied_time:  tOcupado,
+  });
+}
+
+/* ----------------------------------------------------------
+   SUPABASE: guardar registro anónimo en registros_bienestar
+   usuario_id es null literal para evitar errores de tipo UUID.
+---------------------------------------------------------- */
+async function saveToSupabase(data) {
+  const { error } = await supabase
+    .from('registros_bienestar')
+    .insert([data]);
+
+  if (error) {
+    console.error('[RAPsi] Error al guardar registro:', error.message);
+  } else {
+    console.log('[RAPsi] Registro de bienestar guardado correctamente.');
+  }
 }
 
 /* ----------------------------------------------------------
