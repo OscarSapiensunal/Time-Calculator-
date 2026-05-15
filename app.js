@@ -197,14 +197,18 @@ function calcular() {
   // --------------------------------------------------------
   // 5. ACTUALIZAR TARJETAS DE RESULTADO
   // --------------------------------------------------------
-  setResult('sleep',   hSleep,     'Descanso nocturno');
-  setResult('study',   hStudy,     'Carga académica');
-  setResult('transit', hTransit,   'Desplazamientos');
-  setResult('food',    hFood,      'Alimentación');
-  setResult('screen',  hScreen,    'Ocio digital');
-  setResult('other',   tBienestar, 'Bienestar activo');   // reutiliza slot
-  setResult('free',    Math.max(0, tLibreNeto), 'Tiempo libre neto');
-  setResult('total',   tOcupado,   'Total ocupado');
+  setResult('sleep',       hSleep,                  'Descanso nocturno');
+  setResult('food',        hFood,                   'Alimentación');
+  setResult('grooming',    hGrooming,               'Cuidado personal');
+  setResult('transit',     hTransit,                'Desplazamientos');
+  setResult('study',       hStudy,                  'Carga académica');
+  setResult('obligations', hOther,                  'Otras obligaciones');
+  setResult('screen',      hScreen,                 'Ocio digital');
+  setResult('physical',    hPhysical,               'Deporte y salud');
+  setResult('social',      hSocial,                 'Con los que quieres');
+  setResult('hobby',       hHobby,                  'Lo que te apasiona');
+  setResult('free',        Math.max(0, tLibreNeto), 'Tiempo libre neto');
+  setResult('total',       tOcupado,                'Total ocupado');
 
   // --------------------------------------------------------
   // 6. MOSTRAR SECCIONES OCULTAS
@@ -216,14 +220,14 @@ function calcular() {
   // --------------------------------------------------------
   // 7. GRÁFICO Y FEEDBACK
   // --------------------------------------------------------
-  renderChart({ tEstructural, hTransit, tAcademico,
+  renderChart({ hSleep, hFood, hGrooming, hTransit, tAcademico,
                 tOcioDigital, hPhysical, hSocial, hHobby, tOcioYLibre });
 
   renderFeedback({
     tLibreNeto, tBienestar, tOcioDigital,
     tAcademico, hTransit,
     sleep, credits, isStudent,
-    hPhysical, hSocial, hHobby
+    hGrooming, hPhysical, hSocial, hHobby
   });
 
   // --------------------------------------------------------
@@ -301,17 +305,23 @@ function setResult(key, value, labelOverride) {
    GRÁFICO DOUGHNUT — 6 CATEGORÍAS MACRO
    Agrupa las 13 variables en segmentos legibles.
 ========================================================== */
-function renderChart({ tEstructural, hTransit, tAcademico,
+function renderChart({ hSleep, hFood, hGrooming, hTransit, tAcademico,
                         tOcioDigital, hPhysical, hSocial, hHobby, tOcioYLibre }) {
 
   const ctx = document.getElementById('weekChart').getContext('2d');
 
   const CATEGORIAS = [
     {
-      label: 'Descanso y Cuidado',
-      value: tEstructural,
+      label: 'Sueño y Alimentación',
+      value: hSleep + hFood,
       color: '#27546c',
-      desc:  'Sueño, alimentación e higiene personal'
+      desc:  'Sueño nocturno y tiempo dedicado a comidas'
+    },
+    {
+      label: 'Cuidado Personal',
+      value: hGrooming,
+      color: '#3d8ba0',
+      desc:  'Higiene, arreglo y rituales de autocuidado'
     },
     {
       label: 'Transporte',
@@ -442,7 +452,7 @@ function renderFeedback({
   tLibreNeto, tBienestar, tOcioDigital,
   tAcademico, hTransit,
   sleep, credits, isStudent,
-  hPhysical, hSocial, hHobby
+  hGrooming, hPhysical, hSocial, hHobby
 }) {
   const cards = [];
 
@@ -511,6 +521,28 @@ function renderFeedback({
              la mente evita situaciones difíciles.
              Si aun así te despiertas cansado/a o sin energía para el día,
              puede valer la pena explorarlo con alguien de confianza.`
+    });
+  }
+
+  // ——————————————————————————————————————————————
+  // B2. CUIDADO PERSONAL: grooming como anclaje de bienestar
+  // ——————————————————————————————————————————————
+  if (hGrooming / CONFIG.diasSemana < 0.5) {
+    cards.push({
+      type: 'info', icon: '🪥',
+      title: 'El cuidado personal también restaura',
+      body: `Dedicas ${fmt(hGrooming)} h semanales a tu arreglo e higiene personal.
+             Aunque parecen momentos rutinarios, son pausas reales entre una actividad
+             y otra. Proteger ese espacio —ducharse sin prisa, prepararse con calma—
+             tiene un efecto silencioso pero consistente en cómo te sientes el resto del día.`
+    });
+  } else {
+    cards.push({
+      type: 'ok', icon: '🪥',
+      title: `${fmt(hGrooming)} h semanales de cuidado propio — un ancla cotidiana`,
+      body: `Los rituales de higiene y arreglo personal son momentos de transición:
+             del sueño al día, del día al descanso. Dedicarles tiempo con intención
+             convierte lo rutinario en un acto de autocuidado real y consistente.`
     });
   }
 

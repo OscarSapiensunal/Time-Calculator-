@@ -653,12 +653,18 @@ input[type="number"]:focus {
   height: 4px;
 }
 
-.result-card.sleep::before   { background: var(--c-sleep); }
-.result-card.study::before   { background: var(--c-study); }
-.result-card.transit::before { background: var(--c-transit); }
-.result-card.screen::before  { background: var(--color-acento-f); }
-.result-card.free::before    { background: var(--c-free); }
-.result-card.total::before   { background: var(--color-principal); }
+.result-card.sleep::before        { background: var(--c-sleep); }
+.result-card.food::before         { background: var(--c-transit); }
+.result-card.grooming::before     { background: #3d8ba0; }
+.result-card.transit::before      { background: var(--c-transit); }
+.result-card.study::before        { background: var(--c-study); }
+.result-card.obligations::before  { background: #e8a09e; }
+.result-card.screen::before       { background: var(--color-acento-f); }
+.result-card.physical::before     { background: var(--c-physical); }
+.result-card.social::before       { background: var(--c-social); }
+.result-card.hobby::before        { background: var(--c-hobby); }
+.result-card.free::before         { background: var(--c-free); }
+.result-card.total::before        { background: var(--color-principal); }
 
 .result-card .rc-label {
   font-size: .78rem;
@@ -1074,27 +1080,24 @@ footer {
   .hours-card   { width: 100%; }
 }
 
-/* Contador de horas fijo en la parte inferior en móvil */
+/* Contador de horas sticky en la parte superior en móvil */
 @media (max-width: 767px) {
   .hours-counter {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    position: sticky;
+    top: 0;
     z-index: 90;
-    margin: 0;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
     border-radius: 0;
-    border-top: 2px solid rgba(39,84,108,.15);
+    border-top: none;
     border-left: none;
     border-right: none;
-    border-bottom: none;
-    box-shadow: 0 -4px 16px rgba(39,84,108,.10);
-    background: var(--color-white);
+    border-bottom: 2px solid rgba(39,84,108,.12);
+    box-shadow: 0 4px 12px rgba(39,84,108,.08);
     padding: .7rem 1.2rem;
   }
 
-  /* Empuja el contenido del formulario para que no quede tapado */
-  .calc-section { padding-bottom: 5rem; }
+  .calc-section { padding-bottom: 2rem; }
 }
 
 /* ============================================================
@@ -1154,11 +1157,15 @@ footer {
   gap: 1.2rem;
   flex-wrap: wrap;
   margin-top: 1.5rem;
+  margin-bottom: 2rem;
   padding: .9rem 1.4rem;
   background: var(--color-white);
   border-radius: var(--radius);
   border: 1.5px solid rgba(39,84,108,.12);
   box-shadow: var(--shadow);
+  position: sticky;
+  top: 80px;
+  z-index: 80;
 }
 
 .hc-label {
