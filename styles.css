@@ -1068,3 +1068,138 @@ footer {
   .nav-links    { display: none; }
   .hours-card   { width: 100%; }
 }
+
+/* ============================================================
+   STUDENT TOGGLE
+============================================================ */
+.student-toggle {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .7rem 1rem;
+  background: rgba(39,84,108,.04);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(39,84,108,.12);
+}
+
+.student-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-principal);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.student-toggle label {
+  font-weight: 600;
+  font-size: .95rem;
+  color: var(--color-principal);
+  cursor: pointer;
+  margin: 0;
+}
+
+/* ============================================================
+   TRANSPORTE — GRID DE DOS SLIDERS
+============================================================ */
+.transit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin-top: .5rem;
+}
+
+@media (max-width: 480px) {
+  .transit-grid { grid-template-columns: 1fr; }
+}
+
+.sublabel {
+  display: block;
+  font-size: .8rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: .4rem;
+}
+
+/* ============================================================
+   CONTADOR DE HORAS EN TIEMPO REAL
+============================================================ */
+.hours-counter {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+  padding: .9rem 1.4rem;
+  background: var(--color-white);
+  border-radius: var(--radius);
+  border: 1.5px solid rgba(39,84,108,.12);
+  box-shadow: var(--shadow);
+}
+
+.hc-label {
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.hc-value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-principal);
+  white-space: nowrap;
+  transition: color .3s;
+}
+
+.hc-of {
+  font-family: var(--font-body);
+  font-size: .85rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.hc-bar-wrap {
+  flex: 1;
+  min-width: 100px;
+  height: 7px;
+  background: var(--color-fondo);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.hc-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--color-principal);
+  border-radius: 10px;
+  transition: width .25s ease, background .25s;
+}
+
+.hours-counter.hc-over .hc-value { color: var(--color-acento-f); }
+.hours-counter.hc-over .hc-bar   { background: var(--color-acento-f); }
+
+/* ============================================================
+   NOTA DE NO DUPLICIDAD
+============================================================ */
+.note-box {
+  display: flex;
+  gap: .6rem;
+  align-items: flex-start;
+  margin-top: .75rem;
+  padding: .65rem .9rem;
+  background: rgba(255,204,201,.18);
+  border-left: 3px solid var(--color-acento-f);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.note-box .note-icon { font-size: .95rem; flex-shrink: 0; line-height: 1.5; }
+
+.note-box p {
+  font-size: .78rem;
+  color: var(--color-text);
+  line-height: 1.55;
+  margin: 0;
+}

@@ -87,6 +87,11 @@
         <p class="section-sub">
           Completa los campos con tus hábitos habituales. No hay respuestas correctas o incorrectas.
         </p>
+        <div class="hours-counter" id="hours-counter">
+          <span class="hc-label">Horas registradas</span>
+          <div class="hc-value"><span id="hc-used">0</span><span class="hc-of"> / 168 h</span></div>
+          <div class="hc-bar-wrap"><div class="hc-bar" id="hc-bar"></div></div>
+        </div>
       </div>
 
       <div class="calc-grid">
@@ -114,12 +119,24 @@
           </div>
 
           <div class="field">
-            <label for="transit">Tiempo de transporte por día (horas)</label>
-            <div class="range-wrapper">
-              <input type="range" id="transit" min="0" max="5" step="0.5" value="1" oninput="syncRange('transit')" />
-              <span class="range-value" id="transit-val">1 h</span>
+            <label>Transporte semanal</label>
+            <div class="transit-grid">
+              <div>
+                <span class="sublabel">Días que te desplazas / semana</span>
+                <div class="range-wrapper">
+                  <input type="range" id="transit_days" min="1" max="7" step="1" value="5" oninput="syncRange('transit_days')" />
+                  <span class="range-value" id="transit_days-val">5 días</span>
+                </div>
+              </div>
+              <div>
+                <span class="sublabel">Horas de trayecto por día</span>
+                <div class="range-wrapper">
+                  <input type="range" id="transit_hours" min="0" max="5" step="0.5" value="1" oninput="syncRange('transit_hours')" />
+                  <span class="range-value" id="transit_hours-val">1 h</span>
+                </div>
+              </div>
             </div>
-            <p class="hint">Trayecto al campus y de regreso</p>
+            <p class="hint">Total semanal: <strong id="transit-total">5 h</strong></p>
           </div>
 
           <div class="field">
@@ -132,12 +149,12 @@
           </div>
 
           <div class="field">
-            <label for="house_tasks">Tareas del hogar y limpieza por día (horas)</label>
+            <label for="house_tasks">Tareas del hogar por semana (horas)</label>
             <div class="range-wrapper">
-              <input type="range" id="house_tasks" min="0" max="4" step="0.5" value="0.5" oninput="syncRange('house_tasks')" />
-              <span class="range-value" id="house_tasks-val">0.5 h</span>
+              <input type="range" id="house_tasks" min="0" max="20" step="0.5" value="4" oninput="syncRange('house_tasks')" />
+              <span class="range-value" id="house_tasks-val">4 h</span>
             </div>
-            <p class="hint">Aseo, lavado de ropa, compras, organización</p>
+            <p class="hint">Aseo, lavado de ropa, compras, organización — total semanal</p>
           </div>
         </div>
 
@@ -146,8 +163,15 @@
           <h3><span class="icon">📚</span> Carga académica y obligaciones fijas</h3>
 
           <div class="field">
+            <div class="student-toggle">
+              <input type="checkbox" id="is_student" checked />
+              <label for="is_student">¿Eres estudiante actualmente?</label>
+            </div>
+          </div>
+
+          <div class="field" id="credits-field">
             <label for="credits">Número de créditos académicos este semestre</label>
-            <input type="number" id="credits" min="0" max="24" value="16" placeholder="Ej: 16" />
+            <input type="number" id="credits" min="0" max="24" value="16" placeholder="Ej: 16" oninput="updateCounter()" />
             <p class="hint">
               Cada crédito equivale a <strong id="hpc-label">3 h</strong> semanales de dedicación total
               (clase + estudio independiente) — <em>Política académica UNAL vigente</em>
@@ -156,7 +180,7 @@
 
           <div class="field" style="margin-top: 1.6rem;">
             <label for="other">Otras obligaciones fijas semanales (trabajo, tutorías, etc.) — horas</label>
-            <input type="number" id="other" min="0" max="60" value="0" placeholder="Ej: 8 (trabajo, servicio social...)" />
+            <input type="number" id="other" min="0" max="60" value="0" placeholder="Ej: 8 (trabajo, servicio social...)" oninput="updateCounter()" />
             <p class="hint">Trabajo remunerado, cuidado de personas a cargo, servicio social, etc.</p>
           </div>
         </div>
@@ -181,42 +205,28 @@
               <span class="range-value" id="physical_activity-val">2 h</span>
             </div>
             <p class="hint">Ejercicio, deporte, caminatas activas</p>
+            <div class="note-box">
+              <span class="note-icon">⚠️</span>
+              <p><strong>¡Ojo!</strong> Si te desplazas haciendo ejercicio (ej. bici, caminata al campus), regístralo solo en <strong>Transporte</strong> o solo aquí, pero no en ambos. Evita contar la misma hora dos veces.</p>
+            </div>
           </div>
 
           <div class="field">
-            <label for="social_activity">Socialización y actividades comunitarias por semana (horas)</label>
+            <label for="social_activity">Tiempo de calidad (Amigos, Pareja, Familia) por semana (horas)</label>
             <div class="range-wrapper">
               <input type="range" id="social_activity" min="0" max="20" step="1" value="3" oninput="syncRange('social_activity')" />
               <span class="range-value" id="social_activity-val">3 h</span>
             </div>
-            <p class="hint">Tiempo con amigos/as, familia, grupos de interés</p>
+            <p class="hint">Momentos de conexión genuina con personas cercanas</p>
           </div>
 
           <div class="field">
-            <label for="creative_activity">Creatividad, arte y hobbies por semana (horas)</label>
+            <label for="hobby_wellbeing">Otros hobbies y bienestar activo por semana (horas)</label>
             <div class="range-wrapper">
-              <input type="range" id="creative_activity" min="0" max="20" step="1" value="1" oninput="syncRange('creative_activity')" />
-              <span class="range-value" id="creative_activity-val">1 h</span>
+              <input type="range" id="hobby_wellbeing" min="0" max="30" step="1" value="6" oninput="syncRange('hobby_wellbeing')" />
+              <span class="range-value" id="hobby_wellbeing-val">6 h</span>
             </div>
-            <p class="hint">Música, escritura, manualidades, programación por placer</p>
-          </div>
-
-          <div class="field">
-            <label for="mindfulness">Mindfulness, meditación o contemplación por semana (horas)</label>
-            <div class="range-wrapper">
-              <input type="range" id="mindfulness" min="0" max="10" step="0.5" value="0" oninput="syncRange('mindfulness')" />
-              <span class="range-value" id="mindfulness-val">0 h</span>
-            </div>
-            <p class="hint">Prácticas de atención plena, meditación, journaling</p>
-          </div>
-
-          <div class="field">
-            <label for="leisure">Ocio y recreación general por semana (horas)</label>
-            <div class="range-wrapper">
-              <input type="range" id="leisure" min="0" max="30" step="1" value="5" oninput="syncRange('leisure')" />
-              <span class="range-value" id="leisure-val">5 h</span>
-            </div>
-            <p class="hint">Paseos, cine, juegos, descanso sin actividad concreta</p>
+            <p class="hint">Creatividad, meditación, cine, paseos, juegos y cualquier actividad restauradora</p>
           </div>
         </div>
 
