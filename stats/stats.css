@@ -1,7 +1,7 @@
 /* ============================================================
    RAPsi UNAL — Dashboard de Análisis de Bienestar
-   stats.css  ·  Estilos específicos del dashboard (stats/)
-   Depende de ../styles.css para variables y estilos base.
+   stats.css  ·  v2
+   Depende de ../styles.css para variables, tipografías y base.
 ============================================================ */
 
 /* ============================================================
@@ -32,15 +32,11 @@
   border-bottom: 1px solid rgba(39, 84, 108, .08);
 }
 
-.dash-hero .section-title {
-  max-width: 600px;
-}
-
 /* ============================================================
-   SECCIÓN DE FILTROS
+   FILTROS (sticky)
 ============================================================ */
 .filters-section {
-  padding: 1.5rem 0;
+  padding: 1.25rem 0;
   background: var(--color-white);
   border-bottom: 1px solid rgba(39, 84, 108, .08);
   position: sticky;
@@ -59,13 +55,13 @@
 .filter-group {
   display: flex;
   flex-direction: column;
-  gap: .35rem;
+  gap: .3rem;
 }
 
 .filter-group label {
-  font-size: .78rem;
+  font-size: .75rem;
   font-weight: 600;
-  letter-spacing: .06em;
+  letter-spacing: .07em;
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
@@ -76,7 +72,7 @@
   font-size: .9rem;
   color: var(--color-text);
   background: var(--color-fondo);
-  border: 1.5px solid rgba(39, 84, 108, .2);
+  border: 1.5px solid rgba(39, 84, 108, .18);
   border-radius: var(--radius-sm);
   padding: .5rem .8rem;
   outline: none;
@@ -125,51 +121,47 @@
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-  padding: 4rem 1rem;
+  padding: 5rem 1rem;
   color: var(--color-text-muted);
   font-size: .95rem;
+  text-align: center;
 }
 
 .loading-spinner {
-  width: 36px;
-  height: 36px;
-  border: 3px solid rgba(39, 84, 108, .15);
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(39, 84, 108, .12);
   border-top-color: var(--color-principal);
   border-radius: 50%;
-  animation: spin .8s linear infinite;
+  animation: spin .75s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.empty-icon {
-  font-size: 2.5rem;
-  line-height: 1;
-}
+.empty-icon { font-size: 2.8rem; line-height: 1; }
 
 /* ============================================================
-   SECCIÓN KPI
+   KPI CARDS
 ============================================================ */
 .kpi-section {
-  padding: 2.5rem 0 1.5rem;
+  padding: 2.5rem 0 1rem;
 }
 
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 1.25rem;
 }
 
 .kpi-card {
   background: var(--color-white);
-  border: 1px solid rgba(39, 84, 108, .1);
+  border: 1px solid rgba(39, 84, 108, .09);
   border-radius: var(--radius);
   padding: 1.5rem 1.25rem 1.25rem;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  gap: .4rem;
+  gap: .35rem;
   transition: box-shadow .2s, transform .2s;
 }
 
@@ -181,29 +173,124 @@
 .kpi-icon {
   font-size: 1.5rem;
   line-height: 1;
-  margin-bottom: .25rem;
+  margin-bottom: .2rem;
 }
 
 .kpi-value {
   font-family: var(--font-display);
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-size: clamp(1.55rem, 3vw, 2.1rem);
   font-weight: 700;
   color: var(--color-principal);
   line-height: 1.1;
 }
 
 .kpi-label {
-  font-size: .8rem;
+  font-size: .78rem;
   font-weight: 500;
   color: var(--color-text-muted);
   line-height: 1.3;
 }
 
 /* ============================================================
-   SECCIÓN GRÁFICAS
+   INSIGHTS NARRATIVOS
+============================================================ */
+.insights-section {
+  padding: 2rem 0 1rem;
+}
+
+.insights-header {
+  margin-bottom: 1.75rem;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 1rem;
+}
+
+.insight-card {
+  background: var(--color-white);
+  border: 1px solid rgba(39, 84, 108, .09);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.25rem 1.1rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  transition: box-shadow .2s, transform .15s;
+}
+
+.insight-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.insight-icon {
+  font-size: 1.9rem;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: .1rem;
+}
+
+.insight-body {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  min-width: 0;
+}
+
+.insight-header-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.insight-title {
+  font-size: .73rem;
+  font-weight: 600;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.insight-badge {
+  font-size: .65rem;
+  font-weight: 700;
+  padding: .1rem .45rem;
+  border-radius: 100px;
+  letter-spacing: .04em;
+}
+
+.insight-badge--ok {
+  background: #d4edda;
+  color: #276749;
+}
+
+.insight-badge--warn {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.insight-value {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.insight-desc {
+  font-size: .8rem;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+  margin-top: .1rem;
+}
+
+/* ============================================================
+   GRÁFICAS
 ============================================================ */
 .charts-section {
-  padding: 1rem 0 4rem;
+  padding: 1.5rem 0 4rem;
 }
 
 .charts-grid {
@@ -213,82 +300,89 @@
 }
 
 @media (min-width: 900px) {
-  .charts-grid {
-    grid-template-columns: 3fr 2fr;
-  }
+  .charts-grid { grid-template-columns: 3fr 2fr; }
 }
 
 .chart-card {
   background: var(--color-white);
-  border: 1px solid rgba(39, 84, 108, .1);
+  border: 1px solid rgba(39, 84, 108, .09);
   border-radius: var(--radius);
   padding: 1.75rem 1.5rem 1.5rem;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  gap: .5rem;
+  gap: .4rem;
 }
 
 .chart-title {
   font-family: var(--font-display);
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   color: var(--color-principal);
   font-weight: 700;
   line-height: 1.2;
 }
 
 .chart-subtitle {
-  font-size: .82rem;
+  font-size: .8rem;
   color: var(--color-text-muted);
-  margin-bottom: .75rem;
+  margin-bottom: .5rem;
 }
 
-.chart-wrap {
-  position: relative;
-  width: 100%;
-}
+.chart-wrap { position: relative; width: 100%; }
 
-.chart-wrap--bar {
-  height: 340px;
-}
+.chart-wrap--bar     { height: 340px; }
 
-.chart-wrap--radar {
-  max-width: 360px;
+.chart-wrap--doughnut {
+  max-width: 320px;
   margin-inline: auto;
   aspect-ratio: 1;
 }
 
 /* ============================================================
-   LEYENDA DEL RADAR
+   LEYENDA DE LA DONA
 ============================================================ */
-.radar-legend {
+.doughnut-legend {
+  margin-top: 1.25rem;
   display: flex;
-  flex-wrap: wrap;
-  gap: .5rem .75rem;
-  margin-top: 1rem;
-  justify-content: center;
+  flex-direction: column;
+  gap: 0;
 }
 
-.rl-item {
+.dl-item {
   display: flex;
   align-items: center;
-  gap: .35rem;
-  font-size: .75rem;
-  color: var(--color-text-muted);
+  gap: .55rem;
+  padding: .38rem .1rem;
+  border-bottom: 1px solid rgba(39, 84, 108, .06);
+  font-size: .8rem;
 }
 
-.rl-dot {
+.dl-item:last-child { border-bottom: none; }
+
+.dl-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
+.dl-label {
+  color: var(--color-text);
+  flex: 1;
+}
+
+.dl-value {
+  color: var(--color-text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  font-size: .76rem;
+}
+
 /* ============================================================
-   RESPONSIVE AJUSTES
+   RESPONSIVE
 ============================================================ */
 @media (max-width: 600px) {
-  .filters-section { top: 53px; }
+  .filters-section  { top: 53px; }
 
   .filters-bar {
     flex-direction: column;
@@ -297,9 +391,7 @@
 
   .btn-apply { width: 100%; }
 
-  .kpi-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
+  .kpi-grid        { grid-template-columns: 1fr 1fr; }
+  .insights-grid   { grid-template-columns: 1fr; }
   .chart-wrap--bar { height: 420px; }
 }
