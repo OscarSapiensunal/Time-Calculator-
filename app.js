@@ -20,7 +20,9 @@ const CONFIG = {
 ---------------------------------------------------------- */
 const SUPABASE_URL      = "https://gczrxdubzzuiuxuxvxsm.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_yJ_cSM-COnRQfZG7US5c8g_26o8SYS1";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// window.supabaseClient evita conflicto de nombre con window.supabase (objeto del CDN)
+// y elimina cualquier posible SyntaxError por redeclaración de 'const supabase'
+window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ----------------------------------------------------------
    HELPER: sincronizar slider con su etiqueta de valor
@@ -215,7 +217,7 @@ function calcular() {
 ---------------------------------------------------------- */
 async function saveToSupabase(data) {
   try {
-    const { error } = await supabase
+    const { error } = await window.supabaseClient
       .from('registros_bienestar')
       .insert([data]);
 
@@ -601,6 +603,14 @@ function renderFeedback({
     </div>
   `).join('');
 }
+
+/* ----------------------------------------------------------
+   EXPOSICIÓN GLOBAL DE FUNCIONES LLAMADAS DESDE HTML
+   Necesario para que onclick="calcular()" y oninput="syncRange()"
+   funcionen correctamente en cualquier entorno de carga.
+---------------------------------------------------------- */
+window.calcular   = calcular;
+window.syncRange  = syncRange;
 
 /* ----------------------------------------------------------
    BARRA DE PROGRESO DE SCROLL
