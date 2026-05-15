@@ -192,6 +192,8 @@ function calcular() {
   // --------------------------------------------------------
   saveToSupabase({
     usuario_id:               null,
+    consent_accepted:         true,
+    anonymous_mode:           true,
     sleep_hours:              parseFloat(hSleep),
     transport_hours:          parseFloat(hTransit),
     food_hours:               parseFloat(hFood),
