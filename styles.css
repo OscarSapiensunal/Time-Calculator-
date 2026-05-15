@@ -1099,17 +1099,14 @@ footer {
 }
 
 /* ============================================================
-   TRANSPORTE — GRID DE DOS SLIDERS
+   TRANSPORTE — SLIDERS EN COLUMNA VERTICAL
 ============================================================ */
 .transit-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 1.2rem;
   margin-top: .5rem;
-}
-
-@media (max-width: 480px) {
-  .transit-grid { grid-template-columns: 1fr; }
+  width: 100%;
 }
 
 .sublabel {
