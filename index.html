@@ -148,14 +148,6 @@
             <p class="hint">Higiene, vestimenta, rutina nocturna</p>
           </div>
 
-          <div class="field">
-            <label for="house_tasks">Tareas del hogar por semana (horas)</label>
-            <div class="range-wrapper">
-              <input type="range" id="house_tasks" min="0" max="20" step="0.5" value="4" oninput="syncRange('house_tasks')" />
-              <span class="range-value" id="house_tasks-val">4 h</span>
-            </div>
-            <p class="hint">Aseo, lavado de ropa, compras, organización — total semanal</p>
-          </div>
         </div>
 
         <!-- TARJETA 2: Carga Académica -->
@@ -182,6 +174,15 @@
             <label for="other">Otras obligaciones fijas semanales (trabajo, tutorías, etc.) — horas</label>
             <input type="number" id="other" min="0" max="60" value="0" placeholder="Ej: 8 (trabajo, servicio social...)" oninput="updateCounter()" />
             <p class="hint">Trabajo remunerado, cuidado de personas a cargo, servicio social, etc.</p>
+          </div>
+
+          <div class="field" style="margin-top: 1.6rem;">
+            <label for="house_tasks">Tareas del hogar por semana (horas)</label>
+            <div class="range-wrapper">
+              <input type="range" id="house_tasks" min="0" max="20" step="0.5" value="4" oninput="syncRange('house_tasks')" />
+              <span class="range-value" id="house_tasks-val">4 h</span>
+            </div>
+            <p class="hint">Aseo, lavado de ropa, compras, organización — total semanal</p>
           </div>
         </div>
 

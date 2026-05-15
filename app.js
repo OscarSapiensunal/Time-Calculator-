@@ -172,11 +172,11 @@ function calcular() {
   // 4. ALGORITMO INSTITUCIONAL DE BIENESTAR
   // --------------------------------------------------------
 
-  // Necesidades corporales ineludibles
-  const tEstructural = hSleep + hFood + hGrooming + hHouseTasks;
+  // Necesidades corporales ineludibles (sueño, alimentación, aseo)
+  const tEstructural = hSleep + hFood + hGrooming;
 
-  // Tiempo académico y obligaciones fijas
-  const tAcademico   = hStudy + hOther;
+  // Tiempo académico, obligaciones fijas y hogar
+  const tAcademico   = hStudy + hOther + hHouseTasks;
 
   // Bienestar activo: física + social + hobbies/actividades restauradoras
   const tBienestar   = hPhysical + hSocial + hHobby;
@@ -217,7 +217,7 @@ function calcular() {
   // 7. GRÁFICO Y FEEDBACK
   // --------------------------------------------------------
   renderChart({ tEstructural, hTransit, tAcademico,
-                tOcioDigital, tBienestar, tOcioYLibre });
+                tOcioDigital, hPhysical, hSocial, hHobby, tOcioYLibre });
 
   renderFeedback({
     tLibreNeto, tBienestar, tOcioDigital,
@@ -302,7 +302,7 @@ function setResult(key, value, labelOverride) {
    Agrupa las 13 variables en segmentos legibles.
 ========================================================== */
 function renderChart({ tEstructural, hTransit, tAcademico,
-                        tOcioDigital, tBienestar, tOcioYLibre }) {
+                        tOcioDigital, hPhysical, hSocial, hHobby, tOcioYLibre }) {
 
   const ctx = document.getElementById('weekChart').getContext('2d');
 
@@ -311,7 +311,7 @@ function renderChart({ tEstructural, hTransit, tAcademico,
       label: 'Descanso y Cuidado',
       value: tEstructural,
       color: '#27546c',
-      desc:  'Sueño, alimentación, higiene y hogar'
+      desc:  'Sueño, alimentación e higiene personal'
     },
     {
       label: 'Transporte',
@@ -323,7 +323,7 @@ function renderChart({ tEstructural, hTransit, tAcademico,
       label: 'Academia y Obligaciones',
       value: tAcademico,
       color: '#ff9491',
-      desc:  'Carga académica y compromisos fijos'
+      desc:  'Carga académica, hogar y compromisos fijos'
     },
     {
       label: 'Ocio Digital',
@@ -332,13 +332,25 @@ function renderChart({ tEstructural, hTransit, tAcademico,
       desc:  'Redes sociales, streaming, scroll'
     },
     {
-      label: 'Bienestar Activo',
-      value: tBienestar,
-      color: '#a8d5a2',
-      desc:  'Deporte, vínculos, arte, mindfulness'
+      label: 'Deporte y salud',
+      value: hPhysical,
+      color: '#2F7A8C',
+      desc:  'Ejercicio, deporte y caminatas activas'
     },
     {
-      label: 'Ocio y Balance Libre',
+      label: 'Tiempo con los que quieres',
+      value: hSocial,
+      color: '#5BC8AF',
+      desc:  'Amigos, pareja, familia — conexión genuina'
+    },
+    {
+      label: 'Lo que te apasiona',
+      value: hHobby,
+      color: '#B79CED',
+      desc:  'Creatividad, hobbies y actividades restauradoras'
+    },
+    {
+      label: 'Tiempo libre',
       value: tOcioYLibre,
       color: '#e2e8f0',
       desc:  'Recreación libre y tiempo sin compromisos'
@@ -509,28 +521,27 @@ function renderFeedback({
     cards.push({
       type: 'warn', icon: '💜',
       title: 'Tu tiempo de autocuidado activo es muy bajo',
-      body: `Solo ${fmt(tBienestar)} horas semanales entre deporte, socialización,
-             creatividad y contemplación es poco para sostener el bienestar emocional
-             a lo largo del semestre.
-             No necesitas grandes bloques de tiempo: 20 minutos de movimiento,
-             una llamada con alguien que quieres, o dibujar algo sin propósito
-             ya son actos de autocuidado con impacto real.`
+      body: `Esta semana sumas ${fmt(tBienestar)} h entre deporte, vínculos y lo que te apasiona.
+             Es una señal de que el cuidado propio quedó en segundo plano.
+             No necesitas grandes bloques: 20 minutos de movimiento,
+             una llamada con alguien que quieres o hacer algo que disfrutes
+             ya marcan una diferencia real en cómo te sientes.`
     });
   } else if (tBienestar < 10) {
     cards.push({
       type: 'info', icon: '🌱',
-      title: 'Tu bienestar activo tiene espacio para crecer',
-      body: `Inviertes ${fmt(tBienestar)} horas semanales en actividades que te nutren.
-             Es un buen punto de partida. Intenta identificar cuál de las cuatro dimensiones
-             (movimiento, vínculos, creatividad, introspección) está más descuidada
-             y dale un poco más de lugar esta semana.`
+      title: `${fmt(tBienestar)} horas para ti — hay margen para crecer`,
+      body: `Dedicas ${fmt(hPhysical)} h a deporte y salud, ${fmt(hSocial)} h
+             con las personas que quieres y ${fmt(hHobby)} h en lo que te apasiona.
+             Identifica cuál de las tres está más descuidada y dale un poco más de lugar.`
     });
   } else {
     cards.push({
       type: 'ok', icon: '💪',
-      title: `${fmt(tBienestar)} horas de autocuidado activo — muy bien`,
-      body: `Estás dedicando un tiempo significativo a actividades que te sostienen.
-             Ese equilibrio entre la exigencia académica y el cuidado de ti mismo/a
+      title: `${fmt(tBienestar)} horas para lo que te importa — eso se nota`,
+      body: `Dedicas ${fmt(hPhysical)} h a deporte y salud, ${fmt(hSocial)} h
+             con las personas que quieres y ${fmt(hHobby)} h en lo que te apasiona.
+             Ese equilibrio entre la exigencia académica y el cuidado propio
              es uno de los factores más protectores frente al desgaste universitario.`
     });
   }
@@ -561,40 +572,60 @@ function renderFeedback({
   }
 
   // ——————————————————————————————————————————————
-  // E. BIENESTAR POR DIMENSIONES: alertas si alguna está en 0
+  // E. BIENESTAR POR DIMENSIONES: mensaje personalizado con valor real
   // ——————————————————————————————————————————————
   if (hPhysical === 0) {
     cards.push({
       type: 'info', icon: '🚶',
-      title: 'Sin movimiento registrado esta semana',
-      body: `No tienes ninguna actividad física anotada. El cuerpo y la mente son
-             inseparables: la evidencia muestra que incluso 20–30 minutos de caminata
-             reducen el cortisol (hormona del estrés) y mejoran la concentración.
-             No necesitas un gimnasio ni un plan: solo moverte con intención.`
+      title: 'Esta semana no hay movimiento registrado',
+      body: `No anotaste tiempo de deporte o actividad física. El cuerpo y la mente son
+             inseparables: incluso 20–30 minutos de caminata reducen el cortisol
+             y mejoran la concentración. No necesitas un gimnasio: solo moverte con intención.`
+    });
+  } else if (tBienestar < 10) {
+    cards.push({
+      type: 'ok', icon: '🏃',
+      title: `Dedicas ${fmt(hPhysical)} h a deporte y salud esta semana`,
+      body: `El movimiento regular es uno de los factores más protectores del bienestar
+             emocional durante la vida universitaria. Seguir moviéndote, aunque sea poco,
+             marca una diferencia real en cómo te sientes y concentras.`
     });
   }
 
   if (hSocial === 0) {
     cards.push({
       type: 'info', icon: '👥',
-      title: 'Sin tiempo de conexión social registrado',
+      title: 'Esta semana no hay tiempo con las personas que quieres',
       body: `La soledad académica es uno de los factores de riesgo más subestimados
-             en la vida universitaria. No tener ningún espacio de socialización intencional
-             esta semana es algo que vale la pena notar.
-             Un café con alguien, participar en un grupo, o incluso escribirle
-             a una persona que hace tiempo no contactas puede hacer diferencia.`
+             en la vida universitaria. Un café con alguien, participar en un grupo
+             o escribirle a alguien que hace tiempo no contactas puede marcar diferencia.`
+    });
+  } else if (tBienestar < 10) {
+    cards.push({
+      type: 'ok', icon: '👥',
+      title: `Pasas ${fmt(hSocial)} h con las personas que quieres`,
+      body: `La conexión genuina con amigos, pareja o familia es uno de los pilares
+             del bienestar emocional. Ese tiempo no es un lujo: es parte esencial
+             de lo que hace sostenible el semestre.`
     });
   }
 
   if (hHobby === 0) {
     cards.push({
       type: 'info', icon: '🎨',
-      title: 'Sin tiempo para hobbies o actividades restauradoras',
-      body: `No tienes tiempo registrado para hobbies, creatividad ni otras actividades
-             de disfrute esta semana. Estos espacios —aunque sean pequeños— son fundamentales
-             para recuperar energía y mantener la motivación a lo largo del semestre.
-             No hace falta que sea sofisticado: una serie, dibujar algo, escuchar música
-             con atención o sentarse en silencio cinco minutos ya cuentan.`
+      title: 'Esta semana no hay tiempo para lo que te apasiona',
+      body: `No tienes tiempo registrado para hobbies ni actividades restauradoras.
+             Estos espacios —aunque pequeños— son fundamentales para recuperar energía
+             y mantener la motivación. No hace falta que sea sofisticado:
+             una serie, dibujar algo, escuchar música o cinco minutos en silencio ya cuentan.`
+    });
+  } else if (tBienestar < 10) {
+    cards.push({
+      type: 'ok', icon: '🎨',
+      title: `Dedicas ${fmt(hHobby)} h a lo que te apasiona`,
+      body: `Reservar tiempo para tus hobbies y actividades restauradoras es un acto
+             de autocuidado real. Ese espacio te permite recuperar energía y mantener
+             la motivación a lo largo del semestre.`
     });
   }
 
