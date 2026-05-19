@@ -497,6 +497,16 @@ function renderFeedback({
     });
   }
 
+  if (cards.length < MAX && tOcioDigital > 15 && hSleep < 42) {
+    cards.push({
+      type: 'warn', icon: '🌙',
+      title: 'Procrastinación del Sueño',
+      body: `Tus pantallas (${fmt(tOcioDigital)} h/sem) están robándole horas a un
+             descanso que ya viene corto (${fmt(hSleep / 7)} h/noche). El "una más"
+             de la noche acumula deuda cognitiva que no se recupera al día siguiente.`
+    });
+  }
+
   if (cards.length < MAX && tAcademico > 45 && hSocial < 3) {
     cards.push({
       type: 'warn', icon: '📚',
@@ -511,7 +521,7 @@ function renderFeedback({
 
   if (cards.length < MAX && tAcademico >= 15 && tAcademico <= 40) {
     cards.push({
-      type: 'ok', icon: '🟢',
+      type: 'strength', icon: '🟢',
       title: 'Equilibrio Académico',
       body: `Tu carga académica de ${fmt(tAcademico)} h semanales se mantiene dentro
              de un rango que permite sostener el ritmo universitario sin colapsar el resto
@@ -521,7 +531,7 @@ function renderFeedback({
 
   if (cards.length < MAX && hPhysical >= 3) {
     cards.push({
-      type: 'ok', icon: '🏃',
+      type: 'strength', icon: '🏃',
       title: 'Salud Activa',
       body: `Estás destinando ${fmt(hPhysical)} h a actividad física semanal, por encima
              del umbral de beneficio comprobado para la regulación emocional y el manejo
@@ -531,7 +541,7 @@ function renderFeedback({
 
   if (cards.length < MAX && tOcioDigital <= 12) {
     cards.push({
-      type: 'ok', icon: '✨',
+      type: 'strength', icon: '✨',
       title: 'Desconexión Saludable',
       body: `Tu uso de pantallas para ocio (${fmt(tOcioDigital)} h/semana) es moderado.
              Esta contención del consumo digital pasivo libera espacio cognitivo y emocional

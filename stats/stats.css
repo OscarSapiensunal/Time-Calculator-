@@ -93,6 +93,51 @@ input[type="time"].date-input {
   box-shadow: 0 0 0 3px rgba(39, 84, 108, 0.1);
 }
 
+/* ============================================================
+   FILTROS — Endurecimiento del aspecto nativo de date/time
+   Anula los componentes internos del navegador para que la
+   tipografía y los iconos respeten la línea institucional.
+============================================================ */
+/* Chrome / Edge / Safari ----------------------------------- */
+input[type="date"].date-input::-webkit-datetime-edit,
+input[type="time"].date-input::-webkit-datetime-edit {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  padding: 0;
+}
+input[type="date"].date-input::-webkit-datetime-edit-fields-wrapper,
+input[type="time"].date-input::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+input[type="date"].date-input::-webkit-inner-spin-button,
+input[type="time"].date-input::-webkit-inner-spin-button,
+input[type="date"].date-input::-webkit-clear-button,
+input[type="time"].date-input::-webkit-clear-button {
+  display: none;
+  -webkit-appearance: none;
+}
+input[type="date"].date-input::-webkit-calendar-picker-indicator {
+  opacity: .55;
+  cursor: pointer;
+  filter: invert(28%) sepia(20%) saturate(800%) hue-rotate(165deg);
+  transition: opacity .2s;
+}
+input[type="date"].date-input:hover::-webkit-calendar-picker-indicator,
+input[type="time"].date-input::-webkit-calendar-picker-indicator {
+  opacity: .85;
+}
+/* Firefox -------------------------------------------------- */
+input[type="date"].date-input,
+input[type="time"].date-input {
+  -moz-appearance: none;
+  appearance: none;
+}
+/* Placeholder cuando el input está vacío en algunos navegadores */
+input[type="date"].date-input:invalid,
+input[type="time"].date-input:invalid {
+  color: var(--color-text-muted);
+}
+
 .select-input {
   padding-right: 2rem;
   appearance: none;

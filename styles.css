@@ -850,6 +850,19 @@ input[type="number"]:focus {
   background: rgba(168,213,162,.08);
 }
 
+.feedback-card.strength {
+  border-left-color: #198754;
+  background: linear-gradient(
+    to right,
+    rgba(25, 135, 84, .06),
+    var(--color-white) 25%
+  );
+}
+
+.feedback-card.strength .fc-icon {
+  color: #198754;
+}
+
 .feedback-card .fc-icon {
   font-size: 1.6rem;
   flex-shrink: 0;
