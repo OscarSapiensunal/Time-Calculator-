@@ -715,12 +715,8 @@ function renderFeedback({
            tu bienestar, no solo tu rendimiento.
            No existe una distribución perfecta del tiempo. Existe la que te permite
            estudiar con sentido, descansar de verdad y seguir siendo tú.
-           Si algo de lo que viste hoy te inquieta, <strong>RAPsi</strong> y el
-           <strong>Área de Acompañamiento Integral</strong> están para acompañarte.
-           Encuéntralos en Instagram:
-           <a href="https://www.instagram.com/rapsi.unal/" target="_blank" rel="noopener noreferrer" class="feedback-ig-link">@rapsi.unal</a>
-           y
-           <a href="https://www.instagram.com/acompanamientounal_bog/" target="_blank" rel="noopener noreferrer" class="feedback-ig-link">@acompanamientounal_bog</a>.`
+           Si algo de lo que viste hoy te inquieta, <a href="https://www.instagram.com/rapsi.unal/" target="_blank" rel="noopener noreferrer" class="feedback-ig-link">@rapsi.unal</a> y
+          <a href="https://www.instagram.com/acompanamientounal_bog/" target="_blank" rel="noopener noreferrer" class="feedback-ig-link">@acompanamientounal_bog</a>. están para acompañarte.`
   });
 
   // ——————————————————————————————————————————————
