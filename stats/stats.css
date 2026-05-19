@@ -94,6 +94,15 @@
   background-position: right .7rem center;
 }
 
+/* Fila combinada fecha + hora */
+.datetime-row {
+  display: flex;
+  gap: .4rem;
+  align-items: center;
+}
+
+.time-input { width: 108px; }
+
 .btn-apply {
   font-family: var(--font-body);
   font-size: .88rem;

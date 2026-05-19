@@ -17,20 +17,19 @@ let barChartInst      = null;
 let doughnutChartInst = null;
 
 /* ----------------------------------------------------------
-   CATEGORÍAS VISUALES — columnas de la vista analisis_promedios_bienestar
-   (v3.0: se añade Trabajo; claves usan prefijo avg_ de la vista)
+   CATEGORÍAS VISUALES — propiedades del objeto avgs calculado localmente
 ---------------------------------------------------------- */
 const CATEGORIAS = [
-  { label: 'Sueño y Alimentación',   keys: ['avg_sleep_hours', 'avg_food_hours'],                                             color: '#27546c' },
-  { label: 'Cuidado Personal',        keys: ['avg_grooming_hours'],                                                            color: '#3d8ba0' },
-  { label: 'Transporte',              keys: ['avg_transport_hours'],                                                           color: '#5a9bb5' },
-  { label: 'Academia y Obligaciones', keys: ['avg_academic_load_hours', 'avg_obligations_hours', 'avg_house_tasks_hours'],      color: '#ff9491' },
-  { label: 'Trabajo',                 keys: ['avg_work_hours'],                                                                color: '#e8956d' },
-  { label: 'Ocio Digital',            keys: ['avg_scrolling_hours'],                                                           color: '#ffccc9' },
-  { label: 'Deporte y Salud',         keys: ['avg_physical_activity_hours'],                                                   color: '#2F7A8C' },
-  { label: 'Tiempo Social',           keys: ['avg_quality_social_hours'],                                                      color: '#5BC8AF' },
-  { label: 'Hobbies',                 keys: ['avg_other_hobbies_hours'],                                                       color: '#B79CED' },
-  { label: 'Tiempo Libre',            keys: ['avg_available_time'],                                                            color: '#a8d5a2' },
+  { label: 'Sueño y Alimentación',   keys: ['sleep', 'food'],           color: '#27546c' },
+  { label: 'Cuidado Personal',        keys: ['grooming'],                color: '#3d8ba0' },
+  { label: 'Transporte',              keys: ['transit'],                 color: '#5a9bb5' },
+  { label: 'Academia y Obligaciones', keys: ['study', 'other', 'house'], color: '#ff9491' },
+  { label: 'Trabajo',                 keys: ['work'],                    color: '#e8956d' },
+  { label: 'Ocio Digital',            keys: ['screen'],                  color: '#ffccc9' },
+  { label: 'Deporte y Salud',         keys: ['physical'],                color: '#2F7A8C' },
+  { label: 'Tiempo Social',           keys: ['social'],                  color: '#5BC8AF' },
+  { label: 'Hobbies',                 keys: ['hobby'],                   color: '#B79CED' },
+  { label: 'Tiempo Libre',            keys: ['free'],                    color: '#a8d5a2' },
 ];
 
 /* ----------------------------------------------------------
@@ -41,31 +40,35 @@ function fmt(n) {
   return Number.isInteger(v) ? String(v) : v.toFixed(1);
 }
 
-// Suma las claves avg_* de una categoría sobre la fila pre-agregada de la vista.
-function categoryValue(row, cat) {
-  return cat.keys.reduce((s, k) => s + (parseFloat(row[k]) || 0), 0);
+// Suma las propiedades del objeto avgs que corresponden a una categoría.
+function categoryValue(avgs, cat) {
+  return cat.keys.reduce((s, k) => s + (avgs[k] || 0), 0);
 }
 
 /* ----------------------------------------------------------
-   MAPEO DE PROMEDIOS — desde la fila de analisis_promedios_bienestar
-   La vista ya expone los promedios calculados; solo remapeamos nombres.
+   CÁLCULO DE PROMEDIOS EN CLIENTE
+   Recibe el array de filas crudas de registros_bienestar y devuelve
+   el objeto avgs con la misma estructura que usan KPIs, gráficas e insights.
 ---------------------------------------------------------- */
-function computeAverages(row) {
-  const g = key => parseFloat(row[key]) || 0;
+function computeClientAverages(records) {
+  const n = records.length;
+  if (!n) return null;
 
-  const sleep    = g('avg_sleep_hours');
-  const food     = g('avg_food_hours');
-  const grooming = g('avg_grooming_hours');
-  const transit  = g('avg_transport_hours');
-  const study    = g('avg_academic_load_hours');
-  const other    = g('avg_obligations_hours');
-  const house    = g('avg_house_tasks_hours');
-  const work     = g('avg_work_hours');
-  const screen   = g('avg_scrolling_hours');
-  const physical = g('avg_physical_activity_hours');
-  const social   = g('avg_quality_social_hours');
-  const hobby    = g('avg_other_hobbies_hours');
-  const free     = g('avg_available_time');
+  const mean = col => records.reduce((s, r) => s + (parseFloat(r[col]) || 0), 0) / n;
+
+  const sleep    = mean('sleep_hours');
+  const food     = mean('food_hours');
+  const grooming = mean('grooming_hours');
+  const transit  = mean('transport_hours');
+  const study    = mean('academic_load_hours');
+  const other    = mean('obligations_hours');
+  const house    = mean('house_tasks_hours');
+  const work     = mean('work_hours');
+  const screen   = mean('scrolling_hours');
+  const physical = mean('physical_activity_hours');
+  const social   = mean('quality_social_hours');
+  const hobby    = mean('other_hobbies_hours');
+  const free     = mean('available_time');
 
   return {
     sleep, food, grooming, transit, study, other,
@@ -74,9 +77,8 @@ function computeAverages(row) {
     screenDaily:  screen / 7,
     academic:     study + other + house,
     wellbeing:    physical + social + hobby,
-    // La vista puede exponer porcentajes; se usa 0 como fallback seguro.
-    pctPhysical:  g('pct_with_physical_activity'),
-    pctSocial:    g('pct_with_social_activity'),
+    pctPhysical:  records.filter(r => (parseFloat(r.physical_activity_hours) || 0) > 0).length / n * 100,
+    pctSocial:    records.filter(r => (parseFloat(r.quality_social_hours)    || 0) > 0).length / n * 100,
   };
 }
 
@@ -136,75 +138,74 @@ function updateKPIs(avgs, count) {
 }
 
 /* ----------------------------------------------------------
-   INSIGHTS NARRATIVOS
+   HISTORIAS COMUNITARIAS — 4 narrativas cruzadas de salud colectiva
 ---------------------------------------------------------- */
 function renderInsights(avgs) {
   const el = document.getElementById('insights-container');
   if (!el) return;
 
-  const sleepOk    = avgs.sleepDaily >= 7;
-  const freeStrict = avgs.free < 10;
+  // — Story 1: Deuda de Sueño Colectiva
+  const deudaSueno = avgs.sleepDaily < 7 && avgs.study > 40;
+
+  // — Story 2: Paradoja del Ocio Digital
+  const paradojaOcio = avgs.screen > avgs.wellbeing;
+
+  // — Story 3: Carga Invisible del Territorio
+  const transitPct = avgs.free > 0
+    ? Math.round((avgs.transit / avgs.free) * 100)
+    : null;
+
+  // — Story 4: Tendencia al Aislamiento Institucional
+  const aislamientoRisk = avgs.social < 3 || avgs.pctSocial < 50;
 
   const cards = [
     {
       icon:   '🌙',
-      title:  'Sueño promedio',
-      value:  `${fmt(avgs.sleepDaily)} h por noche`,
-      desc:   sleepOk
-        ? 'Dentro del rango recomendado de 7–9 h para adultos jóvenes.'
-        : `Por debajo del mínimo recomendado — déficit de ${fmt(7 - avgs.sleepDaily)} h/noche.`,
+      title:  'La Deuda de Sueño Colectiva',
+      ok:     !deudaSueno,
+      value:  `${fmt(avgs.sleepDaily)} h/noche · ${fmt(avgs.study)} h/sem académicas`,
+      desc:   deudaSueno
+        ? `La comunidad universitaria sostiene sus altas cargas académicas sacrificando el descanso base. En promedio, estamos acumulando una deuda de sueño colectiva que reduce el bienestar y afecta directamente el rendimiento cognitivo institucional.`
+        : `El promedio de sueño se mantiene dentro del rango recomendado (${fmt(avgs.sleepDaily)} h/noche) incluso con una carga académica de ${fmt(avgs.study)} h/semana. Un indicador de equilibrio institucional positivo.`,
       accent: '#27546c',
-      ok:     sleepOk,
-    },
-    {
-      icon:   '📚',
-      title:  'Carga académica',
-      value:  `${fmt(avgs.study)} h/semana`,
-      desc:   `Más ${fmt(avgs.house)} h de hogar y ${fmt(avgs.other)} h de otras obligaciones (total ${fmt(avgs.academic)} h).`,
-      accent: '#ff9491',
-      ok:     null,
-    },
-    {
-      icon:   '🏃',
-      title:  'Actividad física',
-      value:  `${avgs.pctPhysical.toFixed(0)}% la practica`,
-      desc:   `Promedio de ${fmt(avgs.physical)} h/sem entre registros. El ${(100 - avgs.pctPhysical).toFixed(0)}% no reporta ninguna actividad.`,
-      accent: '#2F7A8C',
-      ok:     avgs.pctPhysical >= 50,
     },
     {
       icon:   '📱',
-      title:  'Tiempo en pantallas',
-      value:  `${fmt(avgs.screen)} h/semana`,
-      desc:   `Equivale a ${fmt(avgs.screenDaily)} h/día en redes sociales, streaming y scroll.`,
+      title:  'La Paradoja del Ocio Digital',
+      ok:     !paradojaOcio,
+      value:  `${fmt(avgs.screen)} h pantallas · ${fmt(avgs.wellbeing)} h bienestar activo`,
+      desc:   paradojaOcio
+        ? `Como comunidad, pasamos más tiempo promedio en pantallas recreativas (${fmt(avgs.screen)} h) que en descanso activo, deporte y socialización sumados (${fmt(avgs.wellbeing)} h). El consumo digital se ha convertido en la principal vía pasiva de desconexión.`
+        : `La comunidad supera el tiempo de pantallas (${fmt(avgs.screen)} h) con bienestar activo combinado (${fmt(avgs.wellbeing)} h) de deporte, socialización y hobbies. Una señal de agencia frente al consumo digital pasivo.`,
       accent: '#5a9bb5',
-      ok:     null,
     },
     {
-      icon:   '🌿',
-      title:  'Tiempo libre neto',
-      value:  `${fmt(avgs.free)} h/semana`,
-      desc:   freeStrict
-        ? 'Margen muy ajustado — posible señal de sobreocupación.'
-        : 'Hay espacio razonable para la recuperación y el descanso.',
-      accent: '#a8d5a2',
-      ok:     !freeStrict,
+      icon:   '🚌',
+      title:  'La Carga Invisible del Territorio',
+      ok:     null,
+      value:  `${fmt(avgs.transit)} h/semana en desplazamiento`,
+      desc:   avgs.free > 0
+        ? `El desplazamiento urbano opera como un segundo trabajo no reconocido. El estudiante promedio invierte ${fmt(avgs.transit)} horas a la semana en transporte público, devorando silenciosamente un ${transitPct}% del tiempo libre que podría usarse para la salud o el autocuidado.`
+        : `El desplazamiento urbano consume ${fmt(avgs.transit)} horas semanales sobre una agenda que ya no tiene tiempo libre neto. Esta carga invisible no aparece en ningún horario oficial.`,
+      accent: '#3d8ba0',
     },
     {
-      icon:   '💜',
-      title:  'Bienestar activo',
-      value:  `${fmt(avgs.wellbeing)} h/semana`,
-      desc:   `Deporte, socialización y hobbies combinados. El ${avgs.pctSocial.toFixed(0)}% tiene tiempo social registrado.`,
-      accent: '#B79CED',
-      ok:     null,
+      icon:   '👥',
+      title:  'Tendencia al Aislamiento Institucional',
+      ok:     !aislamientoRisk,
+      value:  `${fmt(avgs.social)} h/sem · ${avgs.pctSocial.toFixed(0)}% con tiempo social`,
+      desc:   aislamientoRisk
+        ? `Detectamos una restricción severa en las redes de socialización activa de los usuarios filtrados. Las demandas cotidianas están desplazando los espacios comunitarios, aumentando el riesgo latente de aislamiento y pérdida de tejido de apoyo en la sede.`
+        : `La comunidad mantiene conexiones sociales activas con un promedio de ${fmt(avgs.social)} h/semana y el ${avgs.pctSocial.toFixed(0)}% de usuarios reportando tiempo social. Las redes de apoyo interpersonal se sostienen como factor protector.`,
+      accent: '#5BC8AF',
     },
   ];
 
   el.innerHTML = cards.map(c => {
     const badge = c.ok === true
-      ? '<span class="insight-badge insight-badge--ok">✓ OK</span>'
+      ? '<span class="insight-badge insight-badge--ok">✓ Favorable</span>'
       : c.ok === false
-        ? '<span class="insight-badge insight-badge--warn">↓ Atención</span>'
+        ? '<span class="insight-badge insight-badge--warn">↑ Alerta</span>'
         : '';
     return `
       <div class="insight-card">
@@ -224,8 +225,8 @@ function renderInsights(avgs) {
 /* ----------------------------------------------------------
    GRÁFICO DE BARRAS — promedios semanales por categoría
 ---------------------------------------------------------- */
-function renderBarChart(row) {
-  const values = CATEGORIAS.map(cat => parseFloat(categoryValue(row, cat).toFixed(1)));
+function renderBarChart(avgs) {
+  const values = CATEGORIAS.map(cat => parseFloat(categoryValue(avgs, cat).toFixed(1)));
   const labels = CATEGORIAS.map(c => c.label);
   const colors = CATEGORIAS.map(c => c.color);
 
@@ -285,9 +286,9 @@ function renderBarChart(row) {
 /* ----------------------------------------------------------
    GRÁFICO DONA — distribución de las 168 horas semanales
 ---------------------------------------------------------- */
-function renderDoughnutChart(row) {
+function renderDoughnutChart(avgs) {
   const TOTAL = 168;
-  const data  = CATEGORIAS.map(cat => parseFloat(categoryValue(row, cat).toFixed(1)));
+  const data  = CATEGORIAS.map(cat => parseFloat(categoryValue(avgs, cat).toFixed(1)));
 
   const chartData = {
     labels:   CATEGORIAS.map(c => c.label),
@@ -351,17 +352,48 @@ function renderDoughnutLegend(data, total) {
 }
 
 /* ----------------------------------------------------------
+   COLUMNAS QUE SE SOLICITAN A registros_bienestar
+---------------------------------------------------------- */
+const COLS_SELECT = [
+  'sleep_hours', 'food_hours', 'grooming_hours', 'transport_hours',
+  'academic_load_hours', 'work_hours', 'obligations_hours', 'house_tasks_hours',
+  'scrolling_hours', 'physical_activity_hours', 'quality_social_hours',
+  'other_hobbies_hours', 'available_time', 'is_student',
+].join(', ');
+
+/* ----------------------------------------------------------
    CONSULTA PRINCIPAL A SUPABASE
-   Lee la vista analisis_promedios_bienestar, que ya expone promedios
-   calculados y tiene políticas RLS de lectura pública.
-   Para métricas globales en crudo usar: supabaseClient.rpc('rapsi_informe_agregado')
+   Lee registros_bienestar directamente para soportar filtros de fecha/hora
+   y tipo de usuario en tiempo real. Los promedios se calculan en cliente.
 ---------------------------------------------------------- */
 async function fetchData() {
   showLoading();
 
-  const { data, error } = await window.supabaseClient
-    .from('analisis_promedios_bienestar')
-    .select('*');
+  const dateFrom = document.getElementById('date-from').value;
+  const dateTo   = document.getElementById('date-to').value;
+  const timeFrom = document.getElementById('time-from').value;
+  const timeTo   = document.getElementById('time-to').value;
+  const userType = document.getElementById('user-type').value;
+
+  let query = window.supabaseClient
+    .from('registros_bienestar')
+    .select(COLS_SELECT)
+    .order('created_at', { ascending: false })
+    .limit(5000);
+
+  if (dateFrom) {
+    const isoFrom = `${dateFrom}T${timeFrom || '00:00:00'}`;
+    query = query.gte('created_at', isoFrom);
+  }
+  if (dateTo) {
+    const isoTo = `${dateTo}T${timeTo || '23:59:59'}`;
+    query = query.lte('created_at', isoTo);
+  }
+
+  if (userType === 'student')    query = query.eq('is_student', true);
+  if (userType === 'nonstudent') query = query.eq('is_student', false);
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('[Stats] Error Supabase:', error.code, error.message, error.details);
@@ -369,22 +401,21 @@ async function fetchData() {
     return;
   }
 
-  console.log(`[Stats] Filas de vista recibidas: ${data?.length ?? 0}`);
+  console.log(`[Stats] Registros obtenidos: ${data?.length ?? 0}`);
 
   if (!data || data.length === 0) {
-    showEmpty('No se encontraron registros en el sistema.');
+    showEmpty('No se encontraron registros para los filtros seleccionados.');
     return;
   }
 
-  const row   = data[0];
-  const count = parseInt(row.total_registros) || 0;
-  const avgs  = computeAverages(row);
+  destroyCharts();
+  const avgs = computeClientAverages(data);
 
   showContent();
-  updateKPIs(avgs, count);
+  updateKPIs(avgs, data.length);
   renderInsights(avgs);
-  renderBarChart(row);
-  renderDoughnutChart(row);
+  renderBarChart(avgs);
+  renderDoughnutChart(avgs);
 }
 
 /* ----------------------------------------------------------
@@ -396,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setDefaultDates();
 
   // Filtros reactivos: se recalcula al cambiar cualquier control
-  ['date-from', 'date-to', 'user-type'].forEach(id =>
+  ['date-from', 'date-to', 'time-from', 'time-to', 'user-type'].forEach(id =>
     document.getElementById(id).addEventListener('change', fetchData)
   );
 
