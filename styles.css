@@ -942,22 +942,23 @@ input[type="number"]:focus {
   display: inline-flex;
   align-items: center;
   gap: .45rem;
-  padding: .65rem 1.4rem;
-  background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+  padding: .6rem 1.4rem;
+  background: rgba(255,255,255,.1);
   color: #fff;
   font-weight: 700;
   font-size: .95rem;
   border-radius: 100px;
   text-decoration: none;
-  transition: transform .2s, box-shadow .2s, opacity .2s;
-  box-shadow: 0 4px 16px rgba(131,58,180,.4);
+  border: 2px solid rgba(255,255,255,.45);
+  transition: transform .2s, background .2s, border-color .2s;
   white-space: nowrap;
+  letter-spacing: .01em;
 }
 
 .instagram-link:hover {
+  background: rgba(255,255,255,.2);
+  border-color: rgba(255,255,255,.75);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(131,58,180,.5);
-  opacity: .92;
 }
 
 .feedback-ig-link {
