@@ -63,12 +63,13 @@
         </div>
         <div class="hero-visual">
           <div class="hours-card">
-            <p class="card-label">Tu semana completa</p>
+            <p class="card-label">Tu semana completa tiene</p>
             <div class="hours-big">168</div>
             <p class="hours-sub">horas disponibles cada semana</p>
             <div class="pill-row">
               <span class="pill pill--sleep"><span class="dot"></span>Dormir</span>
               <span class="pill pill--study"><span class="dot"></span>Estudiar</span>
+              <span class="pill pill--work"><span class="dot"></span>Trabajo</span>
               <span class="pill pill--screen"><span class="dot"></span>Pantallas</span>
               <span class="pill pill--free"><span class="dot"></span>Tiempo libre</span>
             </div>
@@ -85,8 +86,24 @@
         <span class="tag">Paso 1</span>
         <h2 class="section-title">Cuéntame sobre tu semana</h2>
         <p class="section-sub">
-          Completa los campos con tus hábitos habituales. No hay respuestas correctas o incorrectas.
+          Completa los campos con tus rutinas. No hay respuestas correctas o incorrectas.
         </p>
+        <p class="section-motivacional">
+          Al finalizar, recibirás <strong>recomendaciones personalizadas</strong> sobre cómo estás usando tu tiempo esta semana.
+        </p>
+      </div>
+
+      <!-- CONSENTIMIENTO — Ley 1581 de 2012 -->
+      <div class="consent-box">
+        <input type="checkbox" id="consent_accepted" required />
+        <label class="consent-label" for="consent_accepted">
+          <strong>Acepto el tratamiento de mis datos</strong>
+          con fines estrictamente académicos y de investigación estadística para
+          RED de Acompañamiento Integral (RAPsi UNAL). Entiendo que mis respuestas serán
+          completamente confidenciales y anonimizadas, y que no se asociará mi identidad
+          personal con los análisis grupales.
+          <span class="law-badge">Ley 1581 / 2012</span>
+        </label>
       </div>
 
       <div class="hours-counter" id="hours-counter">
@@ -102,7 +119,7 @@
           <h3><span class="icon">🏠</span> Tiempo estructural y obligatorio</h3>
 
           <div class="field">
-            <label for="sleep">Horas de sueño por día</label>
+            <label for="sleep">Horas de sueño por <strong>día</strong></label>
             <div class="range-wrapper">
               <input type="range" id="sleep" min="4" max="12" step="0.5" value="7" oninput="syncRange('sleep')" />
               <span class="range-value" id="sleep-val">7 h</span>
@@ -111,7 +128,7 @@
           </div>
 
           <div class="field">
-            <label for="food">Tiempo dedicado a comidas por día (horas)</label>
+            <label for="food">Tiempo dedicado a comidas por <strong>día</strong> (horas)</label>
             <div class="range-wrapper">
               <input type="range" id="food" min="0.5" max="4" step="0.5" value="1.5" oninput="syncRange('food')" />
               <span class="range-value" id="food-val">1.5 h</span>
@@ -120,33 +137,22 @@
           </div>
 
           <div class="field">
-            <label>Transporte semanal</label>
-            <div class="transit-grid">
-              <div>
-                <span class="sublabel">Días que te desplazas / semana</span>
-                <div class="range-wrapper">
-                  <input type="range" id="transit_days" min="1" max="7" step="1" value="5" oninput="syncRange('transit_days')" />
-                  <span class="range-value" id="transit_days-val">5 días</span>
-                </div>
-              </div>
-              <div>
-                <span class="sublabel">Horas de trayecto por día</span>
-                <div class="range-wrapper">
-                  <input type="range" id="transit_hours" min="0" max="5" step="0.5" value="1" oninput="syncRange('transit_hours')" />
-                  <span class="range-value" id="transit_hours-val">1 h</span>
-                </div>
-              </div>
+            <label>Transporte <strong>semanal</strong></label>
+            <span class="sublabel">Horas de trayecto por <strong>día</strong></span>
+            <div class="range-wrapper">
+              <input type="range" id="transit_hours" min="0" max="5" step="0.5" value="1" oninput="syncRange('transit_hours')" />
+              <span class="range-value" id="transit_hours-val">1 h</span>
             </div>
-            <p class="hint">Total semanal: <strong id="transit-total">5 h</strong></p>
+            <p class="hint">Para efectos prácticos, el cálculo asumirá que te desplazas 6 <strong>días</strong> a la semana. Total estimado: <strong id="transit-total">6 h</strong></p>
           </div>
 
           <div class="field">
-            <label for="grooming">Arreglo personal y preparación para dormir por día (horas)</label>
+            <label for="grooming">Arreglo personal de mañana y noche por <strong>día</strong> (horas)</label>
             <div class="range-wrapper">
               <input type="range" id="grooming" min="0" max="4" step="0.5" value="1" oninput="syncRange('grooming')" />
               <span class="range-value" id="grooming-val">1 h</span>
             </div>
-            <p class="hint">Higiene, vestimenta, rutina nocturna</p>
+            <p class="hint">Toda tu rutina de higiene diaria: ducha, higiene bucal, skincare y vestimenta por la mañana, más la rutina completa de aseo e higiene antes de dormir</p>
           </div>
 
         </div>
@@ -172,13 +178,22 @@
           </div>
 
           <div class="field" style="margin-top: 1.6rem;">
-            <label for="other">Otras obligaciones fijas semanales (trabajo, tutorías, etc.) — horas</label>
-            <input type="number" id="other" min="0" max="60" value="0" placeholder="Ej: 8 (trabajo, servicio social...)" oninput="updateCounter()" />
-            <p class="hint">Trabajo remunerado, cuidado de personas a cargo, servicio social, etc.</p>
+            <label for="work">Trabajo remunerado por <strong>semana</strong> (horas)</label>
+            <div class="range-wrapper">
+              <input type="range" id="work" min="0" max="48" step="1" value="0" oninput="syncRange('work')" />
+              <span class="range-value" id="work-val">0 h</span>
+            </div>
+            <p class="hint">Empleo formal o informal, prácticas remuneradas</p>
           </div>
 
           <div class="field" style="margin-top: 1.6rem;">
-            <label for="house_tasks">Tareas del hogar por semana (horas)</label>
+            <label for="other">Otras obligaciones fijas por <strong>semana</strong> (tutorías, voluntariado, etc.) — horas</label>
+            <input type="number" id="other" min="0" max="60" value="0" placeholder="Ej: 4 (tutorías, servicio social...)" oninput="updateCounter()" />
+            <p class="hint">Cuidado de personas a cargo, servicio social, tutorías, etc. El trabajo remunerado tiene su propio campo.</p>
+          </div>
+
+          <div class="field" style="margin-top: 1.6rem;">
+            <label for="house_tasks">Tareas del hogar por <strong>semana</strong> (horas)</label>
             <div class="range-wrapper">
               <input type="range" id="house_tasks" min="0" max="20" step="0.5" value="4" oninput="syncRange('house_tasks')" />
               <span class="range-value" id="house_tasks-val">4 h</span>
@@ -197,7 +212,7 @@
           </div>
 
           <div class="field">
-            <label for="screen">Scrolling y pantallas recreativas por día (horas)</label>
+            <label for="screen">Scrolling y pantallas recreativas por <strong>día</strong> (horas)</label>
             <div class="range-wrapper">
               <input type="range" id="screen" min="0" max="10" step="0.5" value="3" oninput="syncRange('screen')" />
               <span class="range-value" id="screen-val">3 h</span>
@@ -206,7 +221,7 @@
           </div>
 
           <div class="field">
-            <label for="physical_activity">Actividad física y deporte por semana (horas)</label>
+            <label for="physical_activity">Actividad física y deporte por <strong>semana</strong> (horas)</label>
             <div class="range-wrapper">
               <input type="range" id="physical_activity" min="0" max="20" step="1" value="2" oninput="syncRange('physical_activity')" />
               <span class="range-value" id="physical_activity-val">2 h</span>
@@ -215,7 +230,7 @@
           </div>
 
           <div class="field">
-            <label for="social_activity">Tiempo de calidad (Amigos, Pareja, Familia) por semana (horas)</label>
+            <label for="social_activity">Tiempo de calidad (Amigos, Pareja, Familia) por <strong>semana</strong> (horas)</label>
             <div class="range-wrapper">
               <input type="range" id="social_activity" min="0" max="20" step="1" value="3" oninput="syncRange('social_activity')" />
               <span class="range-value" id="social_activity-val">3 h</span>
@@ -224,7 +239,7 @@
           </div>
 
           <div class="field">
-            <label for="hobby_wellbeing">Otros hobbies y bienestar activo por semana (horas)</label>
+            <label for="hobby_wellbeing">Otros hobbies y bienestar activo por <strong>semana</strong> (horas)</label>
             <div class="range-wrapper">
               <input type="range" id="hobby_wellbeing" min="0" max="30" step="1" value="6" oninput="syncRange('hobby_wellbeing')" />
               <span class="range-value" id="hobby_wellbeing-val">6 h</span>
@@ -234,19 +249,6 @@
         </div>
 
       </div><!-- /.calc-grid -->
-
-      <!-- CONSENTIMIENTO — Ley 1581 de 2012 -->
-      <div class="consent-box">
-        <input type="checkbox" id="consent_accepted" required />
-        <label class="consent-label" for="consent_accepted">
-          <strong>Acepto el tratamiento de mis datos</strong>
-          con fines estrictamente académicos y de investigación estadística para
-          RED de Acompañamiento Integral (RAPsi UNAL). Entiendo que mis respuestas serán
-          completamente confidenciales y anonimizadas, y que no se asociará mi identidad
-          personal con los análisis grupales.
-          <span class="law-badge">Ley 1581 / 2012</span>
-        </label>
-      </div>
 
       <button class="btn-calc" onclick="calcular()">
         Calcular mi tiempo disponible ⟶
@@ -298,6 +300,12 @@
           <div class="rc-value" id="res-obligations">–</div>
           <div class="rc-unit">horas / semana</div>
           <div class="rc-pct" id="res-obligations-pct"></div>
+        </div>
+        <div class="result-card work">
+          <div class="rc-label">Trabajo</div>
+          <div class="rc-value" id="res-work">–</div>
+          <div class="rc-unit">horas / semana</div>
+          <div class="rc-pct" id="res-work-pct"></div>
         </div>
         <div class="result-card screen">
           <div class="rc-label">Pantallas</div>
@@ -381,7 +389,16 @@
           Si sientes que el tiempo se te escapa y que tu bienestar queda en último lugar,
           recuerda que en la UNAL hay espacios creados para acompañarte.
           <strong>No tienes que resolver todo solo/a.</strong>
+          Busca a <strong>RAPsi</strong> y el <strong>Área de Acompañamiento Integral</strong>:
         </p>
+        <div class="instagram-links">
+          <a href="https://www.instagram.com/acompanamientounal_bog/" target="_blank" rel="noopener noreferrer" class="instagram-link">
+            📷 @acompanamientounal_bog
+          </a>
+          <a href="https://www.instagram.com/rapsi.unal/" target="_blank" rel="noopener noreferrer" class="instagram-link">
+            📷 @rapsi.unal
+          </a>
+        </div>
         <p>
           Esta herramienta es un punto de partida, no un juicio.
           Úsala para conocerte mejor y tomar decisiones más conscientes sobre cómo invertir

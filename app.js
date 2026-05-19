@@ -34,11 +34,9 @@ function syncRange(id) {
   const label = document.getElementById(id + '-val');
   const val   = parseFloat(input.value);
   if (label) {
-    label.textContent = id === 'transit_days'
-      ? `${val} día${val !== 1 ? 's' : ''}`
-      : `${fmt(val)} h`;
+    label.textContent = `${fmt(val)} h`;
   }
-  if (id === 'transit_days' || id === 'transit_hours') updateTransitTotal();
+  if (id === 'transit_hours') updateTransitTotal();
   updateCounter();
 }
 
@@ -46,10 +44,9 @@ function syncRange(id) {
    HELPER: actualizar el total semanal de transporte
 ---------------------------------------------------------- */
 function updateTransitTotal() {
-  const days  = parseFloat(document.getElementById('transit_days')?.value)  || 0;
   const hours = parseFloat(document.getElementById('transit_hours')?.value) || 0;
   const el    = document.getElementById('transit-total');
-  if (el) el.textContent = fmt(days * hours) + ' h';
+  if (el) el.textContent = fmt(hours * 6) + ' h';
 }
 
 /* ----------------------------------------------------------
@@ -58,13 +55,13 @@ function updateTransitTotal() {
 function updateCounter() {
   const sleep      = parseFloat(document.getElementById('sleep')?.value)             || 7;
   const food       = parseFloat(document.getElementById('food')?.value)              || 1.5;
-  const transitD   = parseFloat(document.getElementById('transit_days')?.value)      || 5;
   const transitH   = parseFloat(document.getElementById('transit_hours')?.value)     || 1;
   const grooming   = parseFloat(document.getElementById('grooming')?.value)          || 1;
   const houseTasks = parseFloat(document.getElementById('house_tasks')?.value)       || 4;
   const isStudent  = document.getElementById('is_student')?.checked ?? true;
   const credits    = isStudent
                    ? (parseFloat(document.getElementById('credits')?.value) || 0) : 0;
+  const work       = parseFloat(document.getElementById('work')?.value)              || 0;
   const other      = parseFloat(document.getElementById('other')?.value)             || 0;
   const screen     = parseFloat(document.getElementById('screen')?.value)            || 0;
   const physical   = parseFloat(document.getElementById('physical_activity')?.value) || 0;
@@ -72,8 +69,8 @@ function updateCounter() {
   const hobby      = parseFloat(document.getElementById('hobby_wellbeing')?.value)   || 0;
 
   const D     = CONFIG.diasSemana;
-  const total = (sleep * D) + (food * D) + (transitD * transitH) + (grooming * D)
-              + houseTasks + (credits * CONFIG.horasPorCredito) + other
+  const total = (sleep * D) + (food * D) + (transitH * 6) + (grooming * D)
+              + houseTasks + (credits * CONFIG.horasPorCredito) + work + other
               + (screen * D) + physical + social + hobby;
 
   const pctUsed = Math.min(100, (total / CONFIG.totalHoras) * 100);
@@ -132,7 +129,6 @@ function calcular() {
   // Bloque estructural (valores DIARIOS → se multiplican × 7)
   const sleep        = parseFloat(document.getElementById('sleep').value)              || 7;
   const food         = parseFloat(document.getElementById('food').value)               || 1.5;
-  const transitDays  = parseFloat(document.getElementById('transit_days').value)       || 5;
   const transitHours = parseFloat(document.getElementById('transit_hours').value)      || 1;
   const grooming     = parseFloat(document.getElementById('grooming').value)           || 1;
   const houseTasks   = parseFloat(document.getElementById('house_tasks').value)        || 4;
@@ -141,6 +137,7 @@ function calcular() {
   const isStudent  = document.getElementById('is_student')?.checked ?? true;
   const credits    = isStudent
                    ? (parseFloat(document.getElementById('credits').value) || 0) : 0;
+  const work       = parseFloat(document.getElementById('work').value)               || 0;
   const other      = parseFloat(document.getElementById('other').value)              || 0;
 
   // Bloque bienestar: scrolling (DIARIO → × 7)
@@ -158,10 +155,11 @@ function calcular() {
 
   const hSleep      = sleep       * D;
   const hFood       = food        * D;
-  const hTransit    = transitDays * transitHours;  // días × horas/día
+  const hTransit    = transitHours * 6;            // asume 6 días/semana
   const hGrooming   = grooming    * D;
   const hHouseTasks = houseTasks;                  // ya es semanal
   const hStudy      = credits     * CONFIG.horasPorCredito;
+  const hWork       = work;                        // ya es semanal
   const hOther      = other;
   const hScreen     = screen      * D;
   const hPhysical   = physical;
@@ -184,8 +182,8 @@ function calcular() {
   // Ocio digital: consumo pasivo de pantallas
   const tOcioDigital = hScreen;
 
-  // Total ocupado (ocio general integrado en tBienestar via hHobby)
-  const tOcupado = tEstructural + hTransit + tAcademico
+  // Total ocupado
+  const tOcupado = tEstructural + hTransit + tAcademico + hWork
                  + tBienestar   + tOcioDigital;
 
   // Tiempo libre neto (puede ser negativo: sobreocupación crítica)
@@ -202,6 +200,7 @@ function calcular() {
   setResult('grooming',    hGrooming,               'Cuidado personal');
   setResult('transit',     hTransit,                'Desplazamientos');
   setResult('study',       hStudy,                  'Carga académica');
+  setResult('work',        hWork,                   'Trabajo');
   setResult('obligations', hOther,                  'Otras obligaciones');
   setResult('screen',      hScreen,                 'Ocio digital');
   setResult('physical',    hPhysical,               'Deporte y salud');
@@ -221,7 +220,7 @@ function calcular() {
   // 7. GRÁFICO Y FEEDBACK
   // --------------------------------------------------------
   renderChart({ hSleep, hFood, hGrooming, hTransit, tAcademico,
-                tOcioDigital, hPhysical, hSocial, hHobby, tOcioYLibre });
+                hWork, tOcioDigital, hPhysical, hSocial, hHobby, tOcioYLibre });
 
   renderFeedback({
     tLibreNeto, tBienestar, tOcioDigital,
@@ -248,12 +247,12 @@ function calcular() {
     is_student:               isStudent,
     sleep_hours:              parseFloat(hSleep),
     transport_hours:          parseFloat(hTransit),
-    transport_days:           parseInt(transitDays, 10),
     food_hours:               parseFloat(hFood),
     grooming_hours:           parseFloat(hGrooming),
     house_tasks_hours:        parseFloat(hHouseTasks),
     academic_credits:         parseFloat(credits),
     academic_load_hours:      parseFloat(hStudy),
+    work_hours:               parseFloat(hWork),
     obligations_hours:        parseFloat(hOther),
     scrolling_hours:          parseFloat(hScreen),
     physical_activity_hours:  parseFloat(hPhysical),
@@ -306,7 +305,7 @@ function setResult(key, value, labelOverride) {
    Agrupa las 13 variables en segmentos legibles.
 ========================================================== */
 function renderChart({ hSleep, hFood, hGrooming, hTransit, tAcademico,
-                        tOcioDigital, hPhysical, hSocial, hHobby, tOcioYLibre }) {
+                        hWork, tOcioDigital, hPhysical, hSocial, hHobby, tOcioYLibre }) {
 
   const ctx = document.getElementById('weekChart').getContext('2d');
 
@@ -334,6 +333,12 @@ function renderChart({ hSleep, hFood, hGrooming, hTransit, tAcademico,
       value: tAcademico,
       color: '#ff9491',
       desc:  'Carga académica, hogar y compromisos fijos'
+    },
+    {
+      label: 'Trabajo',
+      value: hWork,
+      color: '#e8956d',
+      desc:  'Trabajo remunerado o prácticas'
     },
     {
       label: 'Ocio Digital',
@@ -458,7 +463,10 @@ function renderFeedback({
 
   // ——————————————————————————————————————————————
   // A. EQUILIBRIO GENERAL: tiempo libre neto
+  // "bienestar cubierto" = duerme bien Y tiene actividades restauradoras
   // ——————————————————————————————————————————————
+  const bienestarCubierto = sleep >= 7 && tBienestar >= 10;
+
   if (tLibreNeto < 0) {
     cards.push({
       type: 'warn', icon: '🚨',
@@ -470,15 +478,25 @@ function renderFeedback({
              aligerarse o redistribuirse. Hablar con alguien de RAPsi puede ayudarte
              a encontrar alternativas concretas.`
     });
-  } else if (tLibreNeto < 10) {
+  } else if (tLibreNeto < 10 && !bienestarCubierto) {
     cards.push({
       type: 'warn', icon: '⏳',
       title: 'Tu margen de descanso es muy estrecho',
-      body: `Solo tienes ${fmt(tLibreNeto)} horas semanales sin ningún compromiso asignado.
+      body: `Tienes ${fmt(tLibreNeto)} horas semanales sin ningún compromiso asignado,
+             y además tu tiempo de descanso y ocio activo es bajo.
              El descanso no es un premio al final del trabajo: es el tejido que hace
              sostenible todo lo demás.
              Incluso pequeños cambios —una tarde libre, salir a caminar sin destino—
              pueden marcar una diferencia real en cómo te sientes.`
+    });
+  } else if (tLibreNeto < 10 && bienestarCubierto) {
+    cards.push({
+      type: 'info', icon: '💡',
+      title: 'Agenda ajustada, pero tu bienestar está cubierto',
+      body: `Te quedan ${fmt(tLibreNeto)} horas sin asignar esta semana, lo que es un margen pequeño.
+             Sin embargo, ya tienes incorporados el descanso y el tiempo para lo que te importa,
+             lo cual es lo más valioso. Cuida que esas horas libres no terminen siendo
+             obligaciones disfrazadas de ocio.`
     });
   } else if (tLibreNeto < 20) {
     cards.push({
@@ -697,8 +715,12 @@ function renderFeedback({
            tu bienestar, no solo tu rendimiento.
            No existe una distribución perfecta del tiempo. Existe la que te permite
            estudiar con sentido, descansar de verdad y seguir siendo tú.
-           Si algo de lo que viste hoy te inquieta, RAPsi está disponible para
-           acompañarte a explorarlo.`
+           Si algo de lo que viste hoy te inquieta, <strong>RAPsi</strong> y el
+           <strong>Área de Acompañamiento Integral</strong> están para acompañarte.
+           Encuéntralos en Instagram:
+           <a href="https://www.instagram.com/rapsi.unal/" target="_blank" rel="noopener noreferrer" class="feedback-ig-link">@rapsi.unal</a>
+           y
+           <a href="https://www.instagram.com/acompanamientounal_bog/" target="_blank" rel="noopener noreferrer" class="feedback-ig-link">@acompanamientounal_bog</a>.`
   });
 
   // ——————————————————————————————————————————————
@@ -740,8 +762,8 @@ window.addEventListener('scroll', () => {
 ---------------------------------------------------------- */
 document.addEventListener('DOMContentLoaded', () => {
   [
-    'sleep', 'food', 'transit_days', 'transit_hours', 'grooming', 'house_tasks',
-    'screen', 'physical_activity', 'social_activity', 'hobby_wellbeing'
+    'sleep', 'food', 'transit_hours', 'grooming', 'house_tasks',
+    'work', 'screen', 'physical_activity', 'social_activity', 'hobby_wellbeing'
   ].forEach(syncRange);
 
   // Reflejar la regla de créditos en el hint del formulario

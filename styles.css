@@ -114,6 +114,17 @@ a   { color: inherit; }
   max-width: 55ch;
 }
 
+.section-motivacional {
+  font-size: 1rem;
+  color: var(--color-principal);
+  background: rgba(39,84,108,.06);
+  border-left: 3px solid var(--color-principal);
+  padding: .65rem 1rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-top: .9rem;
+  max-width: 55ch;
+}
+
 /* ============================================================
    HEADER / NAV
 ============================================================ */
@@ -342,11 +353,13 @@ nav {
 
 .pill--sleep  { background: rgba(39,84,108,.1);    color: var(--c-sleep); }
 .pill--study  { background: rgba(255,148,145,.15);  color: #c94340; }
+.pill--work   { background: rgba(232,149,109,.15);  color: #b5602a; }
 .pill--screen { background: rgba(255,204,201,.4);   color: #c94340; }
 .pill--free   { background: rgba(168,213,162,.3);   color: #3a7a35; }
 
 .pill--sleep  .dot { background: var(--c-sleep); }
 .pill--study  .dot { background: var(--c-study); }
+.pill--work   .dot { background: #e8956d; }
 .pill--screen .dot { background: var(--color-acento-f); }
 .pill--free   .dot { background: var(--c-free); }
 
@@ -663,6 +676,7 @@ input[type="number"]:focus {
 .result-card.physical::before     { background: var(--c-physical); }
 .result-card.social::before       { background: var(--c-social); }
 .result-card.hobby::before        { background: var(--c-hobby); }
+.result-card.work::before         { background: #e8956d; }
 .result-card.free::before         { background: var(--c-free); }
 .result-card.total::before        { background: var(--color-principal); }
 
@@ -912,6 +926,49 @@ input[type="number"]:focus {
 }
 
 .reflection-section strong { color: #fff; }
+
+/* ============================================================
+   LINKS DE INSTAGRAM — Reflexión final y cierre feedback
+============================================================ */
+.instagram-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.instagram-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .65rem 1.4rem;
+  background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+  color: #fff;
+  font-weight: 700;
+  font-size: .95rem;
+  border-radius: 100px;
+  text-decoration: none;
+  transition: transform .2s, box-shadow .2s, opacity .2s;
+  box-shadow: 0 4px 16px rgba(131,58,180,.4);
+  white-space: nowrap;
+}
+
+.instagram-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(131,58,180,.5);
+  opacity: .92;
+}
+
+.feedback-ig-link {
+  color: var(--color-acento-f);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: opacity .2s;
+}
+
+.feedback-ig-link:hover { opacity: .75; }
 
 .rapsi-badge {
   display: inline-flex;
