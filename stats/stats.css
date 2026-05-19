@@ -265,8 +265,10 @@ input[type="time"].date-input:invalid {
 
 .insights-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-  gap: 1rem;
+  /* 2 columnas fijas en escritorio: layout 2×2 estable para 4 tarjetas.
+     En pantallas <900px se reduce a 1 columna (ver media queries abajo). */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
 }
 
 .insight-card {
@@ -447,6 +449,10 @@ input[type="time"].date-input:invalid {
 /* ============================================================
    RESPONSIVE
 ============================================================ */
+@media (max-width: 900px) {
+  .insights-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 600px) {
   .filters-section  { top: 53px; }
 

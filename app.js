@@ -517,6 +517,41 @@ function renderFeedback({
     });
   }
 
+  if (cards.length < MAX && hSleep < 35) {
+    cards.push({
+      type: 'warn', icon: '😵',
+      title: 'Privación de Sueño Aguda',
+      body: `Estás durmiendo ${fmt(hSleep / 7)} h por noche en promedio.
+             Por debajo de 5 h/noche el cuerpo entra en deuda metabólica
+             severa: se altera la regulación emocional, la memoria de
+             corto plazo y la respuesta inmune. Esto no es disciplina,
+             es desgaste acumulado.`
+    });
+  }
+
+  if (cards.length < MAX && hTransit > 12) {
+    cards.push({
+      type: 'warn', icon: '🚌',
+      title: 'Tiempo Devorado por el Trayecto',
+      body: `${fmt(hTransit)} h semanales en desplazamiento equivalen a
+             casi una jornada laboral invisible. Este tiempo no genera
+             descanso ni productividad: es desgaste puro. Considera si
+             hay rutas o modalidades híbridas que recuperen aunque sea
+             2 h a la semana para ti.`
+    });
+  }
+
+  if (cards.length < MAX && tBienestar < 3 && tLibreNeto >= 0) {
+    cards.push({
+      type: 'warn', icon: '🫥',
+      title: 'Tiempo Libre Sin Bienestar Activo',
+      body: `Tienes ${fmt(tLibreNeto)} h libres a la semana, pero solo
+             ${fmt(tBienestar)} h las dedicas a actividades restauradoras
+             (deporte, socialización, hobbies). El tiempo libre pasivo no
+             recarga igual: el bienestar activo es lo que reconstruye.`
+    });
+  }
+
   // ——— POSITIVOS ———
 
   if (cards.length < MAX && tAcademico >= 15 && tAcademico <= 40) {
@@ -546,6 +581,29 @@ function renderFeedback({
       body: `Tu uso de pantallas para ocio (${fmt(tOcioDigital)} h/semana) es moderado.
              Esta contención del consumo digital pasivo libera espacio cognitivo y emocional
              para el descanso real y las actividades que genuinamente te restauran.`
+    });
+  }
+
+  if (cards.length < MAX && hSleep >= 49 && hSleep <= 63) {
+    cards.push({
+      type: 'strength', icon: '🌙',
+      title: 'Descanso en Rango OMS',
+      body: `Duermes ${fmt(hSleep / 7)} h por noche en promedio, dentro
+             del rango recomendado por la OMS (7–9 h). El sueño es el
+             pilar invisible del rendimiento cognitivo y la regulación
+             emocional: estás cuidando lo que sostiene todo lo demás.`
+    });
+  }
+
+  if (cards.length < MAX && hSocial >= 5) {
+    cards.push({
+      type: 'strength', icon: '💬',
+      title: 'Red de Apoyo Activa',
+      body: `Dedicas ${fmt(hSocial)} h semanales a tiempo de calidad con
+             personas que te importan. Estas redes son uno de los
+             predictores más sólidos de bienestar psicológico a largo
+             plazo: las amistades en persona amortiguan el estrés
+             académico mejor que cualquier técnica individual.`
     });
   }
 
