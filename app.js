@@ -19,6 +19,8 @@ const CONFIG = {
    Completa las cadenas con los valores de tu proyecto Supabase.
 ---------------------------------------------------------- */
 const SUPABASE_URL      = "https://gczrxdubzzuiuxuxvxsm.supabase.co";
+// La anon key es pública por diseño en aplicaciones del lado del cliente (Vercel);
+// la seguridad de los datos está garantizada por las políticas RLS de Supabase.
 const SUPABASE_ANON_KEY = "sb_publishable_yJ_cSM-COnRQfZG7US5c8g_26o8SYS1";
 // window.supabaseClient evita conflicto de nombre con window.supabase (objeto del CDN)
 // y elimina cualquier posible SyntaxError por redeclaración de 'const supabase'
@@ -122,7 +124,7 @@ function calcular() {
   consentBox.closest('.consent-box').style.outline = '';
 
   // --------------------------------------------------------
-  // 2. CAPTURA DE LAS 13 VARIABLES DEL FORMULARIO
+  // 2. CAPTURA DE LAS 14 VARIABLES DEL FORMULARIO
   //    Valores con fallback para evitar NaN en cálculos.
   // --------------------------------------------------------
 
@@ -243,7 +245,6 @@ function calcular() {
   saveToSupabase({
     usuario_id:               null,
     consent_accepted:         true,
-    anonymous_mode:           true,
     is_student:               isStudent,
     sleep_hours:              parseFloat(hSleep),
     transport_hours:          parseFloat(hTransit),
@@ -258,7 +259,7 @@ function calcular() {
     physical_activity_hours:  parseFloat(hPhysical),
     quality_social_hours:     parseFloat(hSocial),
     other_hobbies_hours:      parseFloat(hHobby),
-    available_time:           parseFloat(Math.max(0, tLibreNeto)),
+    available_time:           parseFloat(tLibreNeto),
     wellbeing_time:           parseFloat(tBienestar),
     occupied_time:            parseFloat(tOcupado),
   });
