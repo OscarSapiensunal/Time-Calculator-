@@ -226,9 +226,9 @@ function calcular() {
 
   renderFeedback({
     tLibreNeto, tBienestar, tOcioDigital,
-    tAcademico, hTransit,
+    tAcademico, hTransit, hWork,
     sleep, credits, isStudent,
-    hGrooming, hPhysical, hSocial, hHobby
+    hPhysical, hSocial
   });
 
   // --------------------------------------------------------
@@ -453,271 +453,103 @@ function renderChart({ hSleep, hFood, hGrooming, hTransit, tAcademico,
 /* ==========================================================
    FEEDBACK DE EQUILIBRIO OCUPACIONAL Y SALUD MENTAL
    Lenguaje: empático, no evaluativo, orientado al autocuidado.
+   Bloques independientes — máx 4 tarjetas de contenido + cierre universal.
 ========================================================== */
 function renderFeedback({
   tLibreNeto, tBienestar, tOcioDigital,
-  tAcademico, hTransit,
+  tAcademico, hTransit, hWork,
   sleep, credits, isStudent,
-  hGrooming, hPhysical, hSocial, hHobby
+  hPhysical, hSocial
 }) {
-  const cards = [];
+  const hSleep    = sleep * CONFIG.diasSemana;
+  const cargaDura = tAcademico + hWork + hTransit;
+  const MAX       = 4;
+  const cards     = [];
 
-  // ——————————————————————————————————————————————
-  // A. EQUILIBRIO GENERAL: tiempo libre neto
-  // "bienestar cubierto" = duerme bien Y tiene actividades restauradoras
-  // ——————————————————————————————————————————————
-  const bienestarCubierto = sleep >= 7 && tBienestar >= 10;
+  // ——— ALERTAS ———
 
-  if (tLibreNeto < 0) {
+  if (cards.length < MAX && tLibreNeto < 0) {
+    cards.push({
+      type: 'warn', icon: '🔴',
+      title: 'Alerta Crítica — Sobreocupación Física',
+      body: `Estás viviendo con "tiempo prestado", sobregirando tus horas semanales
+             y sacrificando tus necesidades vitales para cumplir con tus obligaciones.
+             Es urgente reorganizar o buscar apoyo institucional.`
+    });
+  }
+
+  if (cards.length < MAX && cargaDura > 60 && hSleep < 42) {
     cards.push({
       type: 'warn', icon: '🚨',
-      title: 'Sobreocupación crítica detectada',
-      body: `Tu semana está usando ${fmt(Math.abs(tLibreNeto))} horas más de las que existen.
-             Eso no es un error de cálculo: es una señal real de que el ritmo actual puede
-             estar cobrando un precio invisible en tu cuerpo y tu mente.
-             No se trata de ser más eficiente; se trata de revisar qué cargas podrían
-             aligerarse o redistribuirse. Hablar con alguien de RAPsi puede ayudarte
-             a encontrar alternativas concretas.`
-    });
-  } else if (tLibreNeto < 10 && !bienestarCubierto) {
-    cards.push({
-      type: 'warn', icon: '⏳',
-      title: 'Tu margen de descanso es muy estrecho',
-      body: `Tienes ${fmt(tLibreNeto)} horas semanales sin ningún compromiso asignado,
-             y además tu tiempo de descanso y ocio activo es bajo.
-             El descanso no es un premio al final del trabajo: es el tejido que hace
-             sostenible todo lo demás.
-             Incluso pequeños cambios —una tarde libre, salir a caminar sin destino—
-             pueden marcar una diferencia real en cómo te sientes.`
-    });
-  } else if (tLibreNeto < 10 && bienestarCubierto) {
-    cards.push({
-      type: 'info', icon: '💡',
-      title: 'Agenda ajustada, pero tu bienestar está cubierto',
-      body: `Te quedan ${fmt(tLibreNeto)} horas sin asignar esta semana, lo que es un margen pequeño.
-             Sin embargo, ya tienes incorporados el descanso y el tiempo para lo que te importa,
-             lo cual es lo más valioso. Cuida que esas horas libres no terminen siendo
-             obligaciones disfrazadas de ocio.`
-    });
-  } else if (tLibreNeto < 20) {
-    cards.push({
-      type: 'info', icon: '💡',
-      title: 'Tu tiempo libre existe, cuídalo',
-      body: `Tienes ${fmt(tLibreNeto)} horas semanales disponibles. No son muchas, pero son tuyas.
-             La clave no es cuántas horas libres tienes, sino si ese tiempo
-             realmente te restaura o simplemente "pasa".
-             ¿Hay algo que genuinamente te recargue que todavía no estés priorizando?`
-    });
-  } else {
-    cards.push({
-      type: 'ok', icon: '🌿',
-      title: `Tienes ${fmt(tLibreNeto)} horas libres reales esta semana`,
-      body: `Eso es una señal de equilibrio. Que ese tiempo no se te escurra en
-             obligaciones disfrazadas de ocio: el descanso intencional, la conexión
-             genuina con otras personas y el juego sin propósito son tan importantes
-             como cualquier logro académico.`
+      title: 'Riesgo de Burnout Absoluto',
+      body: `Nivel de exigencia crítico sin combustible físico. Tu cuerpo está sosteniendo
+             una rutina insostenible a largo plazo que compromete directamente tu salud
+             mental y cognitiva.`
     });
   }
 
-  // ——————————————————————————————————————————————
-  // B. SUEÑO: regulación fisiológica base
-  // ——————————————————————————————————————————————
-  if (sleep < 6) {
-    cards.push({
-      type: 'warn', icon: '😴',
-      title: 'El sueño que pierdes no se recupera fácilmente',
-      body: `Dormir ${sleep} h al día afecta la consolidación de la memoria, la regulación
-             emocional y el sistema inmune, incluso si sientes que "ya te acostumbraste".
-             Priorizar el sueño no es un signo de poca dedicación: es la base
-             sobre la que el aprendizaje realmente ocurre.`
-    });
-  } else if (sleep >= 9) {
-    cards.push({
-      type: 'info', icon: '🛌',
-      title: 'Duermes mucho, ¿cómo despiertas?',
-      body: `Dormir más de 9 horas con regularidad puede ser el cuerpo pidiendo
-             recuperación de una deuda acumulada, o a veces es una forma en que
-             la mente evita situaciones difíciles.
-             Si aun así te despiertas cansado/a o sin energía para el día,
-             puede valer la pena explorarlo con alguien de confianza.`
-    });
-  }
-
-  // ——————————————————————————————————————————————
-  // B2. CUIDADO PERSONAL: grooming como anclaje de bienestar
-  // ——————————————————————————————————————————————
-  if (hGrooming / CONFIG.diasSemana < 0.5) {
-    cards.push({
-      type: 'info', icon: '🪥',
-      title: 'El cuidado personal también restaura',
-      body: `Dedicas ${fmt(hGrooming)} h semanales a tu arreglo e higiene personal.
-             Aunque parecen momentos rutinarios, son pausas reales entre una actividad
-             y otra. Proteger ese espacio —ducharse sin prisa, prepararse con calma—
-             tiene un efecto silencioso pero consistente en cómo te sientes el resto del día.`
-    });
-  } else {
-    cards.push({
-      type: 'ok', icon: '🪥',
-      title: `${fmt(hGrooming)} h semanales de cuidado propio — un ancla cotidiana`,
-      body: `Los rituales de higiene y arreglo personal son momentos de transición:
-             del sueño al día, del día al descanso. Dedicarles tiempo con intención
-             convierte lo rutinario en un acto de autocuidado real y consistente.`
-    });
-  }
-
-  // ——————————————————————————————————————————————
-  // C. BIENESTAR ACTIVO: indicador central de RAPsi
-  // ——————————————————————————————————————————————
-  if (tBienestar < 5) {
-    cards.push({
-      type: 'warn', icon: '💜',
-      title: 'Tu tiempo de autocuidado activo es muy bajo',
-      body: `Esta semana sumas ${fmt(tBienestar)} h entre deporte, vínculos y lo que te apasiona.
-             Es una señal de que el cuidado propio quedó en segundo plano.
-             No necesitas grandes bloques: 20 minutos de movimiento,
-             una llamada con alguien que quieres o hacer algo que disfrutes
-             ya marcan una diferencia real en cómo te sientes.`
-    });
-  } else if (tBienestar < 10) {
-    cards.push({
-      type: 'info', icon: '🌱',
-      title: `${fmt(tBienestar)} horas para ti — hay margen para crecer`,
-      body: `Dedicas ${fmt(hPhysical)} h a deporte y salud, ${fmt(hSocial)} h
-             con las personas que quieres y ${fmt(hHobby)} h en lo que te apasiona.
-             Identifica cuál de las tres está más descuidada y dale un poco más de lugar.`
-    });
-  } else {
-    cards.push({
-      type: 'ok', icon: '💪',
-      title: `${fmt(tBienestar)} horas para lo que te importa — eso se nota`,
-      body: `Dedicas ${fmt(hPhysical)} h a deporte y salud, ${fmt(hSocial)} h
-             con las personas que quieres y ${fmt(hHobby)} h en lo que te apasiona.
-             Ese equilibrio entre la exigencia académica y el cuidado propio
-             es uno de los factores más protectores frente al desgaste universitario.`
-    });
-  }
-
-  // ——————————————————————————————————————————————
-  // D. OCIO DIGITAL vs. BIENESTAR ACTIVO
-  // ——————————————————————————————————————————————
-  if (tOcioDigital > 0 && tOcioDigital > tBienestar) {
+  if (cards.length < MAX && tOcioDigital > 20 && tLibreNeto < 15) {
     cards.push({
       type: 'warn', icon: '📱',
-      title: 'El scroll está ocupando más espacio que el autocuidado',
-      body: `Esta semana inviertes más tiempo en pantallas recreativas (${fmt(tOcioDigital)} h)
-             que en actividades que genuinamente te restauran (${fmt(tBienestar)} h).
-             No es una crítica al uso del celular: a veces el scroll es la única forma
-             de desconectarse que tenemos disponible.
-             Pero si sientes que terminas más agotado/a después de scrollear que antes,
-             puede ser el momento de explorar otras formas de descanso activo.`
-    });
-  } else if (tOcioDigital > 28) {
-    cards.push({
-      type: 'info', icon: '📲',
-      title: 'Mucho tiempo en pantallas, ¿cómo te deja?',
-      body: `${fmt(tOcioDigital)} horas semanales en pantallas recreativas es una cantidad
-             considerable. La pregunta clave no es si es "demasiado" según algún estándar,
-             sino cómo te sientes después: ¿descansado/a o vaciado/a?
-             Escuchar esa respuesta es ya un acto de conciencia sobre tu bienestar.`
+      title: 'Refugio Digital — Evasión',
+      body: `Tus horas de pantalla podrían no estar actuando como ocio real, sino como
+             un mecanismo de evasión mental o desconexión automática por agotamiento extremo.`
     });
   }
 
-  // ——————————————————————————————————————————————
-  // E. BIENESTAR POR DIMENSIONES: mensaje personalizado con valor real
-  // ——————————————————————————————————————————————
-  if (hPhysical === 0) {
-    cards.push({
-      type: 'info', icon: '🚶',
-      title: 'Esta semana no hay movimiento registrado',
-      body: `No anotaste tiempo de deporte o actividad física. El cuerpo y la mente son
-             inseparables: incluso 20–30 minutos de caminata reducen el cortisol
-             y mejoran la concentración. No necesitas un gimnasio: solo moverte con intención.`
-    });
-  } else if (tBienestar < 10) {
-    cards.push({
-      type: 'ok', icon: '🏃',
-      title: `Dedicas ${fmt(hPhysical)} h a deporte y salud esta semana`,
-      body: `El movimiento regular es uno de los factores más protectores del bienestar
-             emocional durante la vida universitaria. Seguir moviéndote, aunque sea poco,
-             marca una diferencia real en cómo te sientes y concentras.`
-    });
-  }
-
-  if (hSocial === 0) {
-    cards.push({
-      type: 'info', icon: '👥',
-      title: 'Esta semana no hay tiempo con las personas que quieres',
-      body: `La soledad académica es uno de los factores de riesgo más subestimados
-             en la vida universitaria. Un café con alguien, participar en un grupo
-             o escribirle a alguien que hace tiempo no contactas puede marcar diferencia.`
-    });
-  } else if (tBienestar < 10) {
-    cards.push({
-      type: 'ok', icon: '👥',
-      title: `Pasas ${fmt(hSocial)} h con las personas que quieres`,
-      body: `La conexión genuina con amigos, pareja o familia es uno de los pilares
-             del bienestar emocional. Ese tiempo no es un lujo: es parte esencial
-             de lo que hace sostenible el semestre.`
-    });
-  }
-
-  if (hHobby === 0) {
-    cards.push({
-      type: 'info', icon: '🎨',
-      title: 'Esta semana no hay tiempo para lo que te apasiona',
-      body: `No tienes tiempo registrado para hobbies ni actividades restauradoras.
-             Estos espacios —aunque pequeños— son fundamentales para recuperar energía
-             y mantener la motivación. No hace falta que sea sofisticado:
-             una serie, dibujar algo, escuchar música o cinco minutos en silencio ya cuentan.`
-    });
-  } else if (tBienestar < 10) {
-    cards.push({
-      type: 'ok', icon: '🎨',
-      title: `Dedicas ${fmt(hHobby)} h a lo que te apasiona`,
-      body: `Reservar tiempo para tus hobbies y actividades restauradoras es un acto
-             de autocuidado real. Ese espacio te permite recuperar energía y mantener
-             la motivación a lo largo del semestre.`
-    });
-  }
-
-  // ——————————————————————————————————————————————
-  // F. CARGA ACADÉMICA Y TRANSPORTE
-  // ——————————————————————————————————————————————
-  if (credits > 18) {
+  if (cards.length < MAX && tAcademico > 45 && hSocial < 3) {
     cards.push({
       type: 'warn', icon: '📚',
-      title: 'Carga académica alta: cuídate con más atención',
-      body: `${credits} créditos implican aproximadamente ${credits * CONFIG.horasPorCredito} h
-             semanales de dedicación, lo que deja poco margen para el resto de la vida.
-             Hablar con tu asesor/a académico/a sobre la distribución del semestre
-             puede abrir opciones que no siempre son visibles desde adentro.`
+      title: 'Aislamiento Académico / Laboral',
+      body: `El estudio está absorbiendo por completo tu red de apoyo emocional.
+             Descuidar los vínculos sociales reduce tus amortiguadores contra la
+             ansiedad y la frustración.`
     });
   }
 
-  if (hTransit > 14) {
+  // ——— POSITIVOS ———
+
+  if (cards.length < MAX && tAcademico >= 15 && tAcademico <= 40) {
     cards.push({
-      type: 'info', icon: '🚌',
-      title: 'El transporte también es una carga invisible',
-      body: `${fmt(hTransit)} horas semanales de desplazamiento representan una fatiga
-             real que pocas veces se cuenta como tal.
-             Explorar opciones (clases virtuales, grupos de estudio cercanos, podcasts
-             o audiolibros en el trayecto) puede convertir ese tiempo en algo más
-             llevadero o incluso en tiempo de recuperación.`
+      type: 'ok', icon: '🟢',
+      title: 'Equilibrio Académico',
+      body: `Tu carga académica de ${fmt(tAcademico)} h semanales se mantiene dentro
+             de un rango que permite sostener el ritmo universitario sin colapsar el resto
+             de tu semana. Un buen punto de partida para el bienestar integral.`
     });
   }
 
-  // ——————————————————————————————————————————————
-  // G. MENSAJE DE CIERRE: siempre presente, empático
-  // ——————————————————————————————————————————————
+  if (cards.length < MAX && hPhysical >= 3) {
+    cards.push({
+      type: 'ok', icon: '🏃',
+      title: 'Salud Activa',
+      body: `Estás destinando ${fmt(hPhysical)} h a actividad física semanal, por encima
+             del umbral de beneficio comprobado para la regulación emocional y el manejo
+             del estrés. El movimiento es una de las herramientas más poderosas que tienes.`
+    });
+  }
+
+  if (cards.length < MAX && tOcioDigital <= 12) {
+    cards.push({
+      type: 'ok', icon: '✨',
+      title: 'Desconexión Saludable',
+      body: `Tu uso de pantallas para ocio (${fmt(tOcioDigital)} h/semana) es moderado.
+             Esta contención del consumo digital pasivo libera espacio cognitivo y emocional
+             para el descanso real y las actividades que genuinamente te restauran.`
+    });
+  }
+
+  // ——— CIERRE UNIVERSAL — siempre presente ———
   cards.push({
     type: 'ok', icon: '🌱',
     title: 'Conocerse es el primer paso del autocuidado',
-    body: `Haber completado esta reflexión ya dice algo sobre ti: que te importa
-           tu bienestar, no solo tu rendimiento.
-           No existe una distribución perfecta del tiempo. Existe la que te permite
-           estudiar con sentido, descansar de verdad y seguir siendo tú.
-           Si algo de lo que viste hoy te inquieta, <a href="https://www.instagram.com/rapsi.unal/" target="_blank" rel="noopener noreferrer" class="feedback-ig-link">@rapsi.unal</a> y
-          <a href="https://www.instagram.com/acompanamientounal_bog/" target="_blank" rel="noopener noreferrer" class="feedback-ig-link">@acompanamientounal_bog</a>. están para acompañarte.`
+    body: `Haber completado esta reflexión ya dice algo sobre ti: que te importa tu bienestar,
+           no solo tu rendimiento. No existe una distribución perfecta del tiempo.
+           Existe la que te permite estudiar con sentido, descansar de verdad y seguir siendo tú.
+           Si algo de lo que viste hoy te inquieta,
+           <a href="https://www.instagram.com/rapsi.unal/" target="_blank" rel="noopener noreferrer" class="feedback-ig-link">@rapsi.unal</a> y
+           <a href="https://www.instagram.com/acompanamientounal_bog/" target="_blank" rel="noopener noreferrer" class="feedback-ig-link">@acompanamientounal_bog</a>
+           están para acompañarte.`
   });
 
   // ——————————————————————————————————————————————
