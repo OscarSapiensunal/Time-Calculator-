@@ -1,12 +1,13 @@
 -- ============================================================
 --  SISTEMA DE ANÁLISIS DE BIENESTAR UNIVERSITARIO · RAPsi UNAL
---  ESQUEMA MAESTRO CONSOLIDADO · v3.0.0
+--  ESQUEMA MAESTRO CONSOLIDADO · v3.0.1
 --
 --  Este es el script ÚNICO Y DEFINITIVO para recrear la base
 --  de datos desde cero. Unifica:
---    • Data.sql        (v1.0.0)
---    • jaja.sql        (migración v2.0.0)
---    • migracion_v3    (esta entrega)
+--    • Data.sql           (v1.0.0)
+--    • jaja.sql           (migración v2.0.0)
+--    • migracion_v3       (v3.0.0)
+--    • migracion_v3.0.1   (lectura pública anónima para dashboard)
 --
 --  Sin ALTER TABLE, sin DROP COLUMN: solo CREATE definitivos
 --  con la estructura final del esquema.
@@ -15,7 +16,16 @@
 --  Separación estricta entre identidad y análisis agregado.
 --
 --  Motor   : Supabase (PostgreSQL 15+)
---  Versión : 3.0.0 (consolidada)
+--  Versión : 3.0.1 (consolidada)
+--
+--  CAMBIOS v3.0.1
+--  ─────────────────────────────────────────────────────────────
+--  • Nueva política SELECT pública anónima sobre
+--    registros_bienestar para que el dashboard estadístico
+--    (rol anon) pueda leer agregados y aplicar filtros en
+--    tiempo real. Los datos siguen siendo anónimos: no hay
+--    PII en la tabla y la política filtra por
+--    consent_accepted = true como defensa en profundidad.
 --
 --  USO:
 --    1. Proyecto Supabase nuevo y vacío.
@@ -512,13 +522,14 @@ COMMENT ON POLICY "registros_insert_publico" ON public.registros_bienestar IS
 
 -- 5 | SELECT solo del propio historial
 --  Los registros anónimos (usuario_id IS NULL) son inaccesibles
---  por usuarios individuales; solo se ven mediante funciones
---  SECURITY DEFINER o la vista de análisis agregado.
+--  por usuarios individuales bajo esta política; el dashboard
+--  estadístico los lee mediante la política pública declarada
+--  inmediatamente abajo (registros_select_publico_anonimo).
 --
---  NOTA: El dashboard consulta registros_bienestar directamente.
---  Para que vea filas anónimas, debe consultarse desde un rol
---  con bypass de RLS, O bien consumir la vista
---  analisis_promedios_bienestar (recomendado).
+--  En PostgreSQL, múltiples políticas SELECT sobre la misma
+--  tabla se combinan con OR lógico, así que un usuario
+--  autenticado obtiene la unión de ambos conjuntos sin
+--  conflicto.
 CREATE POLICY "registros_select_propio"
   ON public.registros_bienestar
   FOR SELECT
@@ -527,7 +538,28 @@ CREATE POLICY "registros_select_propio"
 
 COMMENT ON POLICY "registros_select_propio" ON public.registros_bienestar IS
   'Solo permite leer registros donde usuario_id = auth.uid(). '
-  'Los registros anónimos son inaccesibles para usuarios individuales.';
+  'Coexiste con registros_select_publico_anonimo (combinación OR).';
+
+-- 5b | SELECT público anónimo para el dashboard estadístico (v3.0.1)
+--  El dashboard consume registros_bienestar directamente para
+--  soportar filtros dinámicos por fecha/hora/tipo de usuario.
+--  Los datos no contienen PII (solo horas auto-reportadas y un
+--  booleano is_student). El filtro consent_accepted = true es
+--  redundante con el CHECK de la tabla, pero actúa como defensa
+--  en profundidad: si en el futuro el CHECK se relaja, la
+--  política sigue protegiendo el cumplimiento de Ley 1581/2012.
+CREATE POLICY "registros_select_publico_anonimo"
+  ON public.registros_bienestar
+  FOR SELECT
+  TO anon, authenticated
+  USING ( consent_accepted = true );
+
+COMMENT ON POLICY "registros_select_publico_anonimo" ON public.registros_bienestar IS
+  'v3.0.1: Permite SELECT público sobre registros anónimos para '
+  'alimentar el dashboard estadístico. Los registros no contienen '
+  'PII; el usuario_id queda en NULL para auto-reportes públicos. '
+  'Filtra por consent_accepted = true como defensa en profundidad. '
+  'Coexiste con registros_select_propio sin conflicto (OR lógico).';
 
 -- 6 | UPDATE solo del propio historial
 CREATE POLICY "registros_update_propio"
@@ -731,7 +763,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.sugerencias_ocio TO authenticated
 
 
 -- ============================================================
--- FIN DEL ESQUEMA MAESTRO v3.0.0
+-- FIN DEL ESQUEMA MAESTRO v3.0.1
 -- ============================================================
 -- Tabla resumen del estado final:
 --
@@ -761,4 +793,10 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.sugerencias_ocio TO authenticated
 --
 --  Vista:
 --    analisis_promedios_bienestar    · agregados por is_student
+--
+--  Políticas RLS sobre registros_bienestar:
+--    registros_insert_publico            · INSERT anon + authenticated
+--    registros_select_propio             · SELECT historial personal
+--    registros_select_publico_anonimo    · SELECT público dashboard (v3.0.1)
+--    registros_update_propio             · UPDATE historial personal
 -- ============================================================
