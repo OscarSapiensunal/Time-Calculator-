@@ -453,6 +453,7 @@ function renderChart({ hSleep, hFood, hGrooming, hTransit, tAcademico,
 /* ==========================================================
    FEEDBACK DE EQUILIBRIO OCUPACIONAL Y SALUD MENTAL
    Lenguaje: empático, no evaluativo, orientado al autocuidado.
+   Bloques independientes — máx 4 tarjetas de contenido + cierre universal.
 ========================================================== */
 function renderFeedback({
   tLibreNeto, tBienestar, tOcioDigital,
@@ -460,18 +461,14 @@ function renderFeedback({
   sleep, credits, isStudent,
   hPhysical, hSocial
 }) {
-  const hSleep    = sleep * CONFIG.diasSemana;     // sueño semanal en horas
-  const cargaDura = tAcademico + hWork + hTransit; // carga estructural total
+  const hSleep    = sleep * CONFIG.diasSemana;
+  const cargaDura = tAcademico + hWork + hTransit;
+  const MAX       = 4;
+  const cards     = [];
 
-  const cards        = [];
-  let   criticalFound = false;
+  // ——— ALERTAS ———
 
-  // ——————————————————————————————————————————————
-  // ARQUETIPO 1 — Alerta Crítica: Sobreocupación Física
-  // Condición: tiempo libre negativo
-  // ——————————————————————————————————————————————
-  if (tLibreNeto < 0) {
-    criticalFound = true;
+  if (cards.length < MAX && tLibreNeto < 0) {
     cards.push({
       type: 'warn', icon: '🔴',
       title: 'Alerta Crítica — Sobreocupación Física',
@@ -481,12 +478,7 @@ function renderFeedback({
     });
   }
 
-  // ——————————————————————————————————————————————
-  // ARQUETIPO 2 — Riesgo de Burnout Absoluto
-  // Condición: carga dura > 60 h Y sueño semanal < 42 h (< 6 h/día)
-  // ——————————————————————————————————————————————
-  if (cargaDura > 60 && hSleep < 42) {
-    criticalFound = true;
+  if (cards.length < MAX && cargaDura > 60 && hSleep < 42) {
     cards.push({
       type: 'warn', icon: '🚨',
       title: 'Riesgo de Burnout Absoluto',
@@ -496,41 +488,16 @@ function renderFeedback({
     });
   }
 
-  // ——————————————————————————————————————————————
-  // ARQUETIPO 3 — Refugio Digital (Evasión)
-  // Condición: pantallas > 20 h Y tiempo libre < 15 h
-  // ——————————————————————————————————————————————
-  if (tOcioDigital > 20 && tLibreNeto < 15) {
-    criticalFound = true;
+  if (cards.length < MAX && tOcioDigital > 20 && tLibreNeto < 15) {
     cards.push({
-      type: 'warn', icon: '🟡',
+      type: 'warn', icon: '📱',
       title: 'Refugio Digital — Evasión',
       body: `Tus horas de pantalla podrían no estar actuando como ocio real, sino como
              un mecanismo de evasión mental o desconexión automática por agotamiento extremo.`
     });
   }
 
-  // ——————————————————————————————————————————————
-  // ARQUETIPO 4 — Procrastinación del Sueño por Venganza
-  // Condición: pantallas > 15 h Y sueño semanal < 42 h
-  // ——————————————————————————————————————————————
-  if (tOcioDigital > 15 && hSleep < 42) {
-    criticalFound = true;
-    cards.push({
-      type: 'warn', icon: '🌙',
-      title: 'Procrastinación del Sueño por Venganza',
-      body: `El uso de pantallas en la noche podría estar robándole horas vitales a tu
-             descanso físico, siendo el único momento del día en el que sientes que
-             recuperas el control de tu tiempo.`
-    });
-  }
-
-  // ——————————————————————————————————————————————
-  // ARQUETIPO 5 — Aislamiento Académico / Laboral
-  // Condición: carga académica > 45 h Y socialización < 3 h
-  // ——————————————————————————————————————————————
-  if (tAcademico > 45 && hSocial < 3) {
-    criticalFound = true;
+  if (cards.length < MAX && tAcademico > 45 && hSocial < 3) {
     cards.push({
       type: 'warn', icon: '📚',
       title: 'Aislamiento Académico / Laboral',
@@ -540,55 +507,39 @@ function renderFeedback({
     });
   }
 
-  // ——————————————————————————————————————————————
-  // ARQUETIPO 6 — Fatiga Sedentaria
-  // Condición: (transporte + pantallas) > 30 h Y actividad física < 2 h
-  // ——————————————————————————————————————————————
-  if ((hTransit + tOcioDigital) > 30 && hPhysical < 2) {
-    criticalFound = true;
-    cards.push({
-      type: 'warn', icon: '🏃',
-      title: 'Fatiga Sedentaria',
-      body: `Alerta de sedentarismo severo inducido por la rutina de transporte y el
-             uso pasivo de la tecnología. Tu cuerpo necesita pausas activas y movimiento
-             para liberar el estrés acumulado.`
-    });
-  }
+  // ——— POSITIVOS ———
 
-  // ——————————————————————————————————————————————
-  // ARQUETIPO 7 — Bienestar Integral (refuerzo positivo)
-  // Condición: sueño >= 49 h Y bienestar > 10 h Y tiempo libre > 10 h
-  // ——————————————————————————————————————————————
-  if (hSleep >= 49 && tBienestar > 10 && tLibreNeto > 10) {
+  if (cards.length < MAX && tAcademico >= 15 && tAcademico <= 40) {
     cards.push({
       type: 'ok', icon: '🟢',
-      title: 'Refuerzo Positivo — Bienestar Integral',
-      body: `¡Excelente balance! Mantienes un equilibrio ideal universitario, protegiendo
-             tu salud física, tus redes de apoyo y tu autonomía sin descuidar tus
-             proyectos académicos.`
+      title: 'Equilibrio Académico',
+      body: `Tu carga académica de ${fmt(tAcademico)} h semanales se mantiene dentro
+             de un rango que permite sostener el ritmo universitario sin colapsar el resto
+             de tu semana. Un buen punto de partida para el bienestar integral.`
     });
   }
 
-  // ——————————————————————————————————————————————
-  // CIERRE POR DEFECTO — aparece cuando ningún arquetipo crítico aplica
-  // ——————————————————————————————————————————————
-  if (!criticalFound) {
+  if (cards.length < MAX && hPhysical >= 3) {
     cards.push({
-      type: 'info', icon: '💬',
-      title: 'Una semana con espacio para ti',
-      body: `Tu distribución del tiempo no muestra patrones críticos de riesgo esta semana.
-             El tiempo libre neto de ${fmt(tLibreNeto)} h es un indicador de margen real
-             para el autocuidado. Recuerda que el bienestar no es la ausencia de carga,
-             sino la presencia de espacios que te restauran.
-             <a href="https://www.instagram.com/rapsi.unal/" target="_blank" rel="noopener noreferrer" class="feedback-ig-link">@rapsi.unal</a> y
-             <a href="https://www.instagram.com/acompanamientounal_bog/" target="_blank" rel="noopener noreferrer" class="feedback-ig-link">@acompanamientounal_bog</a>
-             pueden ayudarte a mantener ese equilibrio.`
+      type: 'ok', icon: '🏃',
+      title: 'Salud Activa',
+      body: `Estás destinando ${fmt(hPhysical)} h a actividad física semanal, por encima
+             del umbral de beneficio comprobado para la regulación emocional y el manejo
+             del estrés. El movimiento es una de las herramientas más poderosas que tienes.`
     });
   }
 
-  // ——————————————————————————————————————————————
-  // CIERRE UNIVERSAL — siempre presente
-  // ——————————————————————————————————————————————
+  if (cards.length < MAX && tOcioDigital <= 12) {
+    cards.push({
+      type: 'ok', icon: '✨',
+      title: 'Desconexión Saludable',
+      body: `Tu uso de pantallas para ocio (${fmt(tOcioDigital)} h/semana) es moderado.
+             Esta contención del consumo digital pasivo libera espacio cognitivo y emocional
+             para el descanso real y las actividades que genuinamente te restauran.`
+    });
+  }
+
+  // ——— CIERRE UNIVERSAL — siempre presente ———
   cards.push({
     type: 'ok', icon: '🌱',
     title: 'Conocerse es el primer paso del autocuidado',

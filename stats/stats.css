@@ -71,19 +71,26 @@
   font-family: var(--font-body);
   font-size: .9rem;
   color: var(--color-text);
-  background: var(--color-fondo);
-  border: 1.5px solid rgba(39, 84, 108, .18);
-  border-radius: var(--radius-sm);
-  padding: .5rem .8rem;
+  background-color: var(--color-white);
+  border: 1px solid rgba(39, 84, 108, 0.15);
+  border-radius: 8px;
+  padding: .6rem;
   outline: none;
-  transition: border-color .2s;
+  transition: border-color .2s, box-shadow .2s;
   cursor: pointer;
   height: 40px;
+}
+
+/* Fuerza paleta de colores claros en el selector nativo del navegador */
+input[type="date"].date-input,
+input[type="time"].date-input {
+  color-scheme: light;
 }
 
 .date-input:focus,
 .select-input:focus {
   border-color: var(--color-principal);
+  box-shadow: 0 0 0 3px rgba(39, 84, 108, 0.1);
 }
 
 .select-input {
@@ -279,6 +286,11 @@
 .insight-badge--warn {
   background: #fff3cd;
   color: #856404;
+}
+
+.insight-badge--strength {
+  background: #198754;
+  color: #ffffff;
 }
 
 .insight-value {
