@@ -121,7 +121,7 @@
           <div class="field">
             <label for="sleep">Horas de sueño por <strong>día</strong></label>
             <div class="range-wrapper">
-              <input type="range" id="sleep" min="4" max="12" step="0.5" value="7" oninput="syncRange('sleep')" />
+              <input type="range" id="sleep" min="4" max="12" step="0.25" value="7" oninput="syncRange('sleep')" />
               <span class="range-value" id="sleep-val">7 h</span>
             </div>
             <p class="hint">Recomendado: 7 – 9 horas para adultos jóvenes</p>
@@ -130,7 +130,7 @@
           <div class="field">
             <label for="food">Tiempo dedicado a comidas por <strong>día</strong> (horas)</label>
             <div class="range-wrapper">
-              <input type="range" id="food" min="0.5" max="4" step="0.5" value="1.5" oninput="syncRange('food')" />
+              <input type="range" id="food" min="0.5" max="4" step="0.25" value="1.5" oninput="syncRange('food')" />
               <span class="range-value" id="food-val">1.5 h</span>
             </div>
             <p class="hint">Incluye preparación, consumo y descanso post-comida</p>
@@ -140,7 +140,7 @@
             <label>Transporte <strong>semanal</strong></label>
             <span class="sublabel">Horas de trayecto por <strong>día</strong></span>
             <div class="range-wrapper">
-              <input type="range" id="transit_hours" min="0" max="5" step="0.5" value="1" oninput="syncRange('transit_hours')" />
+              <input type="range" id="transit_hours" min="0" max="5" step="0.25" value="1" oninput="syncRange('transit_hours')" />
               <span class="range-value" id="transit_hours-val">1 h</span>
             </div>
             <p class="hint">Para efectos prácticos, el cálculo asumirá que te desplazas 6 <strong>días</strong> a la semana. Total estimado: <strong id="transit-total">6 h</strong></p>
@@ -149,7 +149,7 @@
           <div class="field">
             <label for="grooming">Arreglo personal de mañana y noche por <strong>día</strong> (horas)</label>
             <div class="range-wrapper">
-              <input type="range" id="grooming" min="0" max="4" step="0.5" value="1" oninput="syncRange('grooming')" />
+              <input type="range" id="grooming" min="0" max="4" step="0.25" value="1" oninput="syncRange('grooming')" />
               <span class="range-value" id="grooming-val">1 h</span>
             </div>
             <p class="hint">Toda tu rutina de higiene diaria: ducha, higiene bucal, skincare y vestimenta por la mañana, más la rutina completa de aseo e higiene antes de dormir</p>
@@ -195,7 +195,7 @@
           <div class="field" style="margin-top: 1.6rem;">
             <label for="house_tasks">Tareas del hogar por <strong>semana</strong> (horas)</label>
             <div class="range-wrapper">
-              <input type="range" id="house_tasks" min="0" max="20" step="0.5" value="4" oninput="syncRange('house_tasks')" />
+              <input type="range" id="house_tasks" min="0" max="20" step="0.25" value="4" oninput="syncRange('house_tasks')" />
               <span class="range-value" id="house_tasks-val">4 h</span>
             </div>
             <p class="hint">Aseo, lavado de ropa, compras, organización — total semanal</p>
@@ -214,7 +214,7 @@
           <div class="field">
             <label for="screen">Scrolling y pantallas recreativas por <strong>día</strong> (horas)</label>
             <div class="range-wrapper">
-              <input type="range" id="screen" min="0" max="10" step="0.5" value="3" oninput="syncRange('screen')" />
+              <input type="range" id="screen" min="0" max="16" step="0.5" value="3" oninput="syncRange('screen')" />
               <span class="range-value" id="screen-val">3 h</span>
             </div>
             <p class="hint">Redes sociales, streaming, videojuegos (sin contar estudio)</p>
@@ -223,7 +223,7 @@
           <div class="field">
             <label for="physical_activity">Actividad física y deporte por <strong>semana</strong> (horas)</label>
             <div class="range-wrapper">
-              <input type="range" id="physical_activity" min="0" max="20" step="1" value="2" oninput="syncRange('physical_activity')" />
+              <input type="range" id="physical_activity" min="0" max="20" step="0.25" value="2" oninput="syncRange('physical_activity')" />
               <span class="range-value" id="physical_activity-val">2 h</span>
             </div>
             <p class="hint">Ejercicio, deporte, caminatas activas</p>
@@ -232,7 +232,7 @@
           <div class="field">
             <label for="social_activity">Tiempo de calidad (Amigos, Pareja, Familia) por <strong>semana</strong> (horas)</label>
             <div class="range-wrapper">
-              <input type="range" id="social_activity" min="0" max="20" step="1" value="3" oninput="syncRange('social_activity')" />
+              <input type="range" id="social_activity" min="0" max="20" step="0.25" value="3" oninput="syncRange('social_activity')" />
               <span class="range-value" id="social_activity-val">3 h</span>
             </div>
             <p class="hint">Momentos de conexión genuina con personas cercanas</p>
@@ -241,7 +241,7 @@
           <div class="field">
             <label for="hobby_wellbeing">Otros hobbies y bienestar activo por <strong>semana</strong> (horas)</label>
             <div class="range-wrapper">
-              <input type="range" id="hobby_wellbeing" min="0" max="30" step="1" value="6" oninput="syncRange('hobby_wellbeing')" />
+              <input type="range" id="hobby_wellbeing" min="0" max="30" step="0.25" value="6" oninput="syncRange('hobby_wellbeing')" />
               <span class="range-value" id="hobby_wellbeing-val">6 h</span>
             </div>
             <p class="hint">Creatividad, meditación, cine, paseos, juegos y cualquier actividad restauradora</p>
