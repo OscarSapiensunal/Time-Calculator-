@@ -17,37 +17,20 @@ let barChartInst      = null;
 let doughnutChartInst = null;
 
 /* ----------------------------------------------------------
-   COLUMNAS QUE SE PIDEN A LA BD (los 12 factores)
----------------------------------------------------------- */
-const COLS_SELECT = [
-  'sleep_hours',
-  'food_hours',
-  'grooming_hours',
-  'transport_hours',
-  'academic_load_hours',
-  'obligations_hours',
-  'house_tasks_hours',
-  'scrolling_hours',
-  'physical_activity_hours',
-  'quality_social_hours',
-  'other_hobbies_hours',
-  'available_time',
-  'is_student',
-].join(', ');
-
-/* ----------------------------------------------------------
-   CATEGORÍAS VISUALES — mismas 9 que en app.js (para las gráficas)
+   CATEGORÍAS VISUALES — columnas de la vista analisis_promedios_bienestar
+   (v3.0: se añade Trabajo; claves usan prefijo avg_ de la vista)
 ---------------------------------------------------------- */
 const CATEGORIAS = [
-  { label: 'Sueño y Alimentación',   keys: ['sleep_hours', 'food_hours'],                                            color: '#27546c' },
-  { label: 'Cuidado Personal',        keys: ['grooming_hours'],                                                       color: '#3d8ba0' },
-  { label: 'Transporte',              keys: ['transport_hours'],                                                      color: '#5a9bb5' },
-  { label: 'Academia y Obligaciones', keys: ['academic_load_hours', 'obligations_hours', 'house_tasks_hours'],         color: '#ff9491' },
-  { label: 'Ocio Digital',            keys: ['scrolling_hours'],                                                      color: '#ffccc9' },
-  { label: 'Deporte y Salud',         keys: ['physical_activity_hours'],                                              color: '#2F7A8C' },
-  { label: 'Tiempo Social',           keys: ['quality_social_hours'],                                                 color: '#5BC8AF' },
-  { label: 'Hobbies',                 keys: ['other_hobbies_hours'],                                                  color: '#B79CED' },
-  { label: 'Tiempo Libre',            keys: ['available_time'],                                                       color: '#a8d5a2' },
+  { label: 'Sueño y Alimentación',   keys: ['avg_sleep_hours', 'avg_food_hours'],                                             color: '#27546c' },
+  { label: 'Cuidado Personal',        keys: ['avg_grooming_hours'],                                                            color: '#3d8ba0' },
+  { label: 'Transporte',              keys: ['avg_transport_hours'],                                                           color: '#5a9bb5' },
+  { label: 'Academia y Obligaciones', keys: ['avg_academic_load_hours', 'avg_obligations_hours', 'avg_house_tasks_hours'],      color: '#ff9491' },
+  { label: 'Trabajo',                 keys: ['avg_work_hours'],                                                                color: '#e8956d' },
+  { label: 'Ocio Digital',            keys: ['avg_scrolling_hours'],                                                           color: '#ffccc9' },
+  { label: 'Deporte y Salud',         keys: ['avg_physical_activity_hours'],                                                   color: '#2F7A8C' },
+  { label: 'Tiempo Social',           keys: ['avg_quality_social_hours'],                                                      color: '#5BC8AF' },
+  { label: 'Hobbies',                 keys: ['avg_other_hobbies_hours'],                                                       color: '#B79CED' },
+  { label: 'Tiempo Libre',            keys: ['avg_available_time'],                                                            color: '#a8d5a2' },
 ];
 
 /* ----------------------------------------------------------
@@ -58,51 +41,42 @@ function fmt(n) {
   return Number.isInteger(v) ? String(v) : v.toFixed(1);
 }
 
-function meanCol(rows, key) {
-  if (!rows.length) return 0;
-  return rows.reduce((s, r) => s + (parseFloat(r[key]) || 0), 0) / rows.length;
-}
-
-function categoryAvg(rows, cat) {
-  if (!rows.length) return 0;
-  return rows.reduce((s, r) =>
-    s + cat.keys.reduce((a, k) => a + (parseFloat(r[k]) || 0), 0), 0
-  ) / rows.length;
+// Suma las claves avg_* de una categoría sobre la fila pre-agregada de la vista.
+function categoryValue(row, cat) {
+  return cat.keys.reduce((s, k) => s + (parseFloat(row[k]) || 0), 0);
 }
 
 /* ----------------------------------------------------------
-   CÁLCULO DE PROMEDIOS — los 12 factores + derivados
+   MAPEO DE PROMEDIOS — desde la fila de analisis_promedios_bienestar
+   La vista ya expone los promedios calculados; solo remapeamos nombres.
 ---------------------------------------------------------- */
-function computeAverages(rows) {
-  const n = rows.length;
-  if (!n) return null;
+function computeAverages(row) {
+  const g = key => parseFloat(row[key]) || 0;
 
-  const mean = key => meanCol(rows, key);
-
-  const sleep    = mean('sleep_hours');
-  const food     = mean('food_hours');
-  const grooming = mean('grooming_hours');
-  const transit  = mean('transport_hours');
-  const study    = mean('academic_load_hours');
-  const other    = mean('obligations_hours');
-  const house    = mean('house_tasks_hours');
-  const screen   = mean('scrolling_hours');
-  const physical = mean('physical_activity_hours');
-  const social   = mean('quality_social_hours');
-  const hobby    = mean('other_hobbies_hours');
-  const free     = mean('available_time');
+  const sleep    = g('avg_sleep_hours');
+  const food     = g('avg_food_hours');
+  const grooming = g('avg_grooming_hours');
+  const transit  = g('avg_transport_hours');
+  const study    = g('avg_academic_load_hours');
+  const other    = g('avg_obligations_hours');
+  const house    = g('avg_house_tasks_hours');
+  const work     = g('avg_work_hours');
+  const screen   = g('avg_scrolling_hours');
+  const physical = g('avg_physical_activity_hours');
+  const social   = g('avg_quality_social_hours');
+  const hobby    = g('avg_other_hobbies_hours');
+  const free     = g('avg_available_time');
 
   return {
-    // 12 factores individuales
     sleep, food, grooming, transit, study, other,
-    house, screen, physical, social, hobby, free,
-    // Derivados
+    house, work, screen, physical, social, hobby, free,
     sleepDaily:   sleep / 7,
     screenDaily:  screen / 7,
     academic:     study + other + house,
     wellbeing:    physical + social + hobby,
-    pctPhysical:  rows.filter(r => (parseFloat(r.physical_activity_hours) || 0) > 0).length / n * 100,
-    pctSocial:    rows.filter(r => (parseFloat(r.quality_social_hours)    || 0) > 0).length / n * 100,
+    // La vista puede exponer porcentajes; se usa 0 como fallback seguro.
+    pctPhysical:  g('pct_with_physical_activity'),
+    pctSocial:    g('pct_with_social_activity'),
   };
 }
 
@@ -250,8 +224,8 @@ function renderInsights(avgs) {
 /* ----------------------------------------------------------
    GRÁFICO DE BARRAS — promedios semanales por categoría
 ---------------------------------------------------------- */
-function renderBarChart(rows) {
-  const values = CATEGORIAS.map(cat => parseFloat(categoryAvg(rows, cat).toFixed(1)));
+function renderBarChart(row) {
+  const values = CATEGORIAS.map(cat => parseFloat(categoryValue(row, cat).toFixed(1)));
   const labels = CATEGORIAS.map(c => c.label);
   const colors = CATEGORIAS.map(c => c.color);
 
@@ -311,9 +285,9 @@ function renderBarChart(rows) {
 /* ----------------------------------------------------------
    GRÁFICO DONA — distribución de las 168 horas semanales
 ---------------------------------------------------------- */
-function renderDoughnutChart(rows) {
+function renderDoughnutChart(row) {
   const TOTAL = 168;
-  const data  = CATEGORIAS.map(cat => parseFloat(categoryAvg(rows, cat).toFixed(1)));
+  const data  = CATEGORIAS.map(cat => parseFloat(categoryValue(row, cat).toFixed(1)));
 
   const chartData = {
     labels:   CATEGORIAS.map(c => c.label),
@@ -378,30 +352,16 @@ function renderDoughnutLegend(data, total) {
 
 /* ----------------------------------------------------------
    CONSULTA PRINCIPAL A SUPABASE
-   Directa sobre registros_bienestar con filtros opcionales.
+   Lee la vista analisis_promedios_bienestar, que ya expone promedios
+   calculados y tiene políticas RLS de lectura pública.
+   Para métricas globales en crudo usar: supabaseClient.rpc('rapsi_informe_agregado')
 ---------------------------------------------------------- */
 async function fetchData() {
   showLoading();
 
-  const from     = document.getElementById('date-from').value;
-  const to       = document.getElementById('date-to').value;
-  const userType = document.getElementById('user-type').value;
-
-  let query = window.supabaseClient
-    .from('registros_bienestar')
-    .select(COLS_SELECT)
-    .order('created_at', { ascending: false })
-    .limit(1000);
-
-  // Filtros de fecha: sin sufijo de zona horaria para máxima compatibilidad
-  if (from) query = query.gte('created_at', from);
-  if (to)   query = query.lte('created_at', to + 'T23:59:59');
-
-  // Filtro de tipo de usuario
-  if (userType === 'student')    query = query.eq('is_student', true);
-  if (userType === 'nonstudent') query = query.eq('is_student', false);
-
-  const { data, error } = await query;
+  const { data, error } = await window.supabaseClient
+    .from('analisis_promedios_bienestar')
+    .select('*');
 
   if (error) {
     console.error('[Stats] Error Supabase:', error.code, error.message, error.details);
@@ -409,20 +369,22 @@ async function fetchData() {
     return;
   }
 
-  console.log(`[Stats] Registros obtenidos: ${data?.length ?? 0}`);
+  console.log(`[Stats] Filas de vista recibidas: ${data?.length ?? 0}`);
 
   if (!data || data.length === 0) {
-    showEmpty('No se encontraron registros para los filtros seleccionados.');
+    showEmpty('No se encontraron registros en el sistema.');
     return;
   }
 
-  const avgs = computeAverages(data);
+  const row   = data[0];
+  const count = parseInt(row.total_registros) || 0;
+  const avgs  = computeAverages(row);
 
   showContent();
-  updateKPIs(avgs, data.length);
+  updateKPIs(avgs, count);
   renderInsights(avgs);
-  renderBarChart(data);
-  renderDoughnutChart(data);
+  renderBarChart(row);
+  renderDoughnutChart(row);
 }
 
 /* ----------------------------------------------------------
