@@ -1163,8 +1163,10 @@ footer {
     border-top: none;
     border-left: none;
     border-right: none;
-    border-bottom: 2px solid rgba(39,84,108,.12);
-    box-shadow: 0 4px 12px rgba(39,84,108,.08);
+    border-bottom: 2px solid rgba(39,84,108,.18);
+    /* Sombra inferior pronunciada que separa visualmente el
+       contador del contenido que pasa por debajo al scrollear. */
+    box-shadow: 0 8px 16px -4px rgba(39,84,108,.18), 0 4px 8px -2px rgba(39,84,108,.10);
     padding: .7rem 1.2rem;
   }
 
@@ -1233,7 +1235,10 @@ footer {
   background: var(--color-white);
   border-radius: var(--radius);
   border: 1.5px solid rgba(39,84,108,.12);
-  box-shadow: var(--shadow);
+  /* Sombra reforzada para que el contador se lea como barra
+     flotante sobre el contenido scrolleado, no como elemento
+     en flujo. */
+  box-shadow: 0 6px 20px rgba(39,84,108,.12), 0 2px 4px rgba(39,84,108,.06);
   position: sticky;
   top: 80px;
   z-index: 80;
@@ -1305,4 +1310,19 @@ footer {
   color: var(--color-text);
   line-height: 1.55;
   margin: 0;
+}
+
+/* Enlace del header que lleva al dashboard estadístico — se diferencia
+   visualmente de los anclajes internos para indicar que es navegación. */
+.nav-links .nav-stats-link {
+  padding: .35rem .85rem;
+  border-radius: 100px;
+  background: var(--color-acento-f, #ff9491);
+  color: var(--color-white) !important;
+  font-weight: 600;
+  transition: background .2s, transform .15s;
+}
+.nav-links .nav-stats-link:hover {
+  background: #e87f7c;
+  transform: translateY(-1px);
 }
