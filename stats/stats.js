@@ -21,7 +21,8 @@ let doughnutChartInst = null;
    lea directamente los aliases del objeto avgs.
 ---------------------------------------------------------- */
 const CATEGORIAS = [
-  { label: 'Sueño y Alimentación',   keys: ['avg_sleep_hours', 'avg_food_hours'],                                            color: '#27546c' },
+  { label: 'Sueño',                   keys: ['avg_sleep_hours'],                                                              color: '#27546c' },
+  { label: 'Alimentación',            keys: ['avg_food_hours'],                                                               color: '#d4a574' },
   { label: 'Cuidado Personal',        keys: ['avg_grooming_hours'],                                                           color: '#3d8ba0' },
   { label: 'Transporte',              keys: ['avg_transport_hours'],                                                          color: '#5a9bb5' },
   { label: 'Academia y Obligaciones', keys: ['avg_academic_load_hours', 'avg_obligations_hours', 'avg_house_tasks_hours'],     color: '#ff9491' },
@@ -152,7 +153,7 @@ function updateKPIs(avgs, count) {
   document.getElementById('kpi-val-total').textContent    = count.toLocaleString('es-CO');
   document.getElementById('kpi-val-sleep').textContent    = fmt(avgs.sleepDaily)  + ' h/día';
   document.getElementById('kpi-val-academic').textContent = fmt(avgs.study)       + ' h/sem';
-  document.getElementById('kpi-val-free').textContent     = fmt(avgs.free)        + ' h/sem';
+  document.getElementById('kpi-val-free').textContent     = fmt(avgs.wellbeing)   + ' h/sem';
 }
 
 /* ----------------------------------------------------------
