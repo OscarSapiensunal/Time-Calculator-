@@ -1326,3 +1326,186 @@ footer {
   background: #e87f7c;
   transform: translateY(-1px);
 }
+
+/* ============================================================
+   CHIPS DE UNIDAD TEMPORAL (DÍA / SEMANA)
+   Etiqueta visual al lado del nombre del campo para que sea
+   imposible confundir la unidad sin leer la descripción.
+============================================================ */
+.field-header {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  flex-wrap: wrap;
+  margin-bottom: .5rem;
+}
+.field-header label {
+  margin-bottom: 0;
+}
+.time-chip {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: .18rem .55rem;
+  border-radius: 100px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+.time-chip--day {
+  background: rgba(39, 84, 108, .12);
+  color: var(--color-principal);
+}
+.time-chip--week {
+  background: rgba(255, 148, 145, .18);
+  color: #c75451;
+}
+
+/* ============================================================
+   ALERTA DE SOBRECARGA — Cuando el usuario supera 168 h/sem
+============================================================ */
+.hours-overflow {
+  display: flex;
+  align-items: flex-start;
+  gap: .85rem;
+  margin-top: -.75rem;
+  margin-bottom: 2rem;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 148, 145, .12);
+  border: 1.5px solid rgba(255, 148, 145, .55);
+  border-radius: var(--radius);
+  animation: overflow-pulse .5s ease-out;
+}
+.hours-overflow[hidden] {
+  display: none;
+}
+.hours-overflow-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: .1rem;
+}
+.hours-overflow-body {
+  font-size: .9rem;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+.hours-overflow-body strong {
+  display: block;
+  color: #c75451;
+  font-weight: 700;
+  margin-bottom: .25rem;
+}
+@keyframes overflow-pulse {
+  0%   { transform: scale(.98); opacity: 0; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+/* ============================================================
+   BOTÓN CALCULAR EN ESTADO DESHABILITADO
+============================================================ */
+.btn-calc:disabled {
+  background: var(--color-text-muted);
+  cursor: not-allowed;
+  opacity: .6;
+  transform: none;
+}
+.btn-calc:disabled:hover {
+  background: var(--color-text-muted);
+  transform: none;
+  box-shadow: none;
+}
+
+/* ============================================================
+   NAVEGACIÓN MÓVIL — Hamburger menu sin JavaScript
+============================================================ */
+.nav-mobile {
+  display: none;
+  position: relative;
+}
+.nav-mobile summary {
+  list-style: none;
+  cursor: pointer;
+  padding: .55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background .2s;
+}
+.nav-mobile summary::-webkit-details-marker { display: none; }
+.nav-mobile summary::marker { content: ''; }
+.nav-mobile summary:hover { background: rgba(39, 84, 108, .08); }
+.hamburger-bar {
+  display: block;
+  width: 22px;
+  height: 2.5px;
+  background: var(--color-principal);
+  border-radius: 2px;
+  transition: transform .2s, opacity .2s;
+}
+.nav-mobile[open] summary .hamburger-bar:nth-child(1) {
+  transform: translateY(6.5px) rotate(45deg);
+}
+.nav-mobile[open] summary .hamburger-bar:nth-child(2) {
+  opacity: 0;
+}
+.nav-mobile[open] summary .hamburger-bar:nth-child(3) {
+  transform: translateY(-6.5px) rotate(-45deg);
+}
+.nav-mobile-list {
+  position: absolute;
+  top: calc(100% + .55rem);
+  right: 0;
+  min-width: 220px;
+  list-style: none;
+  margin: 0;
+  padding: .6rem;
+  background: var(--color-white);
+  border: 1px solid rgba(39, 84, 108, .12);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 28px rgba(39, 84, 108, .18);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+}
+.nav-mobile-list li { list-style: none; }
+.nav-mobile-list a {
+  display: block;
+  padding: .65rem .85rem;
+  font-family: var(--font-body);
+  font-size: .95rem;
+  color: var(--color-text);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background .15s, color .15s;
+}
+.nav-mobile-list a:hover {
+  background: rgba(39, 84, 108, .06);
+  color: var(--color-principal);
+}
+.nav-mobile-list .nav-stats-link {
+  margin-top: .35rem;
+  background: var(--color-acento-f, #ff9491);
+  color: var(--color-white) !important;
+  font-weight: 600;
+  text-align: center;
+}
+.nav-mobile-list .nav-stats-link:hover {
+  background: #e87f7c;
+  color: var(--color-white) !important;
+}
+.nav-mobile-list .nav-active {
+  color: var(--color-principal);
+  font-weight: 600;
+}
+@media (max-width: 767px) {
+  .nav-mobile { display: block; }
+}

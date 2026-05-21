@@ -380,6 +380,7 @@ input[type="time"].date-input:invalid {
   display: flex;
   flex-direction: column;
   gap: .4rem;
+  overflow: hidden;
 }
 
 .chart-title {
@@ -453,12 +454,36 @@ input[type="time"].date-input:invalid {
   .insights-grid { grid-template-columns: 1fr; }
 }
 
+/* En pantallas muy estrechas (≤400px), KPIs en columna única
+   para que labels como "Tiempo para el bienestar (promedio)"
+   no queden apretados a ~155px. */
+@media (max-width: 400px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+}
+
+/* Header altura intermedia: con hamburguesa visible pero
+   pantalla aún no estrecha. Ajusta el sticky filter para que
+   no se desfase. */
+@media (max-width: 767px) and (min-width: 601px) {
+  .filters-section { top: 53px; }
+}
+
 @media (max-width: 600px) {
   .filters-section  { top: 53px; }
 
   .filters-bar {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .datetime-row {
+    flex-direction: column;
+    gap: .55rem;
+  }
+
+  .datetime-row .date-input,
+  .datetime-row .time-input {
+    width: 100%;
   }
 
   .btn-apply { width: 100%; }

@@ -38,17 +38,7 @@ function syncRange(id) {
   if (label) {
     label.textContent = `${fmt(val)} h`;
   }
-  if (id === 'transit_hours') updateTransitTotal();
   updateCounter();
-}
-
-/* ----------------------------------------------------------
-   HELPER: actualizar el total semanal de transporte
----------------------------------------------------------- */
-function updateTransitTotal() {
-  const hours = parseFloat(document.getElementById('transit_hours')?.value) || 0;
-  const el    = document.getElementById('transit-total');
-  if (el) el.textContent = fmt(hours * 6) + ' h';
 }
 
 /* ----------------------------------------------------------
@@ -71,7 +61,7 @@ function updateCounter() {
   const hobby      = parseFloat(document.getElementById('hobby_wellbeing')?.value)   || 0;
 
   const D     = CONFIG.diasSemana;
-  const total = (sleep * D) + (food * D) + (transitH * 6) + (grooming * D)
+  const total = (sleep * D) + (food * D) + transitH + (grooming * D)
               + houseTasks + (credits * CONFIG.horasPorCredito) + work + other
               + (screen * D) + physical + social + hobby;
 
@@ -79,11 +69,21 @@ function updateCounter() {
 
   const usedEl  = document.getElementById('hc-used');
   const barEl   = document.getElementById('hc-bar');
-  const wrapEl  = document.getElementById('hours-counter');
+  const wrapEl     = document.getElementById('hours-counter');
+  const overflowEl = document.getElementById('hours-overflow');
+  const btnCalc    = document.querySelector('.btn-calc');
+  const isOver     = total > CONFIG.totalHoras;
 
   if (usedEl) usedEl.textContent = fmt(total);
   if (barEl)  barEl.style.width  = pctUsed + '%';
-  if (wrapEl) wrapEl.classList.toggle('hc-over', total > CONFIG.totalHoras);
+  if (wrapEl)     wrapEl.classList.toggle('hc-over', isOver);
+  if (overflowEl) overflowEl.hidden = !isOver;
+  if (btnCalc) {
+    btnCalc.disabled = isOver;
+    btnCalc.textContent = isOver
+      ? 'Estás gastando más de 168 h/semana — revisa tus campos'
+      : 'Calcular mi tiempo disponible ⟶';
+  }
 }
 
 /* ----------------------------------------------------------
@@ -157,7 +157,7 @@ function calcular() {
 
   const hSleep      = sleep       * D;
   const hFood       = food        * D;
-  const hTransit    = transitHours * 6;            // asume 6 días/semana
+  const hTransit    = transitHours;                // ya viene en horas/semana
   const hGrooming   = grooming    * D;
   const hHouseTasks = houseTasks;                  // ya es semanal
   const hStudy      = credits     * CONFIG.horasPorCredito;
@@ -757,6 +757,5 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Inicializar totales y contador
-  updateTransitTotal();
   updateCounter();
 });
