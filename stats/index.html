@@ -33,7 +33,7 @@
         </a>
         <ul class="nav-links">
           <li><a href="../index.html">Calculadora</a></li>
-          <li><a href="#" class="nav-active">Análisis</a></li>
+          <li><a href="#" class="nav-active">Estadísticas</a></li>
         </ul>
         <details class="nav-mobile">
           <summary aria-label="Abrir menú">
@@ -43,7 +43,7 @@
           </summary>
           <ul class="nav-mobile-list">
             <li><a href="../index.html">Calculadora</a></li>
-            <li><a href="#" class="nav-active">Análisis</a></li>
+            <li><a href="#" class="nav-active">Estadísticas</a></li>
           </ul>
         </details>
       </nav>
@@ -53,11 +53,12 @@
   <!-- HERO DEL DASHBOARD -->
   <section class="dash-hero">
     <div class="container">
-      <span class="tag">Análisis estadístico · Datos anónimos</span>
-      <h1 class="section-title" style="margin-top:.75rem">Dashboard de Bienestar</h1>
+      <span class="tag">Estadísticas · Datos anónimos</span>
+      <h1 class="section-title" style="margin-top:.75rem">Dashboard de Estadísticas</h1>
       <p class="section-sub">
-        Exploración agregada de los registros anónimos de la comunidad UNAL.
-        Todos los valores son promedios estadísticos y no identifican a ningún usuario.
+        Mira las estadísticas de las personas que han
+        llenado la calculadora de bienestar. Todos los valores son
+        promedios anónimos y no identifican a ningún usuario individual.
       </p>
     </div>
   </section>
@@ -65,31 +66,37 @@
   <!-- FILTROS (sticky) -->
   <section class="filters-section">
     <div class="container">
-      <div class="filters-bar">
-        <div class="filter-group">
-          <label for="date-from">Desde</label>
-          <div class="datetime-row">
-            <input type="date" id="date-from" class="date-input" />
-            <input type="time" id="time-from" class="date-input time-input" />
+      <details class="filters-details" open id="filters-details">
+        <summary class="filters-summary">
+          <span>Filtros</span>
+          <span class="filters-chevron">▼</span>
+        </summary>
+        <div class="filters-bar">
+          <div class="filter-group">
+            <label for="date-from">Desde</label>
+            <div class="datetime-row">
+              <input type="date" id="date-from" class="date-input" />
+              <input type="time" id="time-from" class="date-input time-input" />
+            </div>
           </div>
-        </div>
-        <div class="filter-group">
-          <label for="date-to">Hasta</label>
-          <div class="datetime-row">
-            <input type="date" id="date-to" class="date-input" />
-            <input type="time" id="time-to" class="date-input time-input" />
+          <div class="filter-group">
+            <label for="date-to">Hasta</label>
+            <div class="datetime-row">
+              <input type="date" id="date-to" class="date-input" />
+              <input type="time" id="time-to" class="date-input time-input" />
+            </div>
           </div>
+          <div class="filter-group">
+            <label for="user-type">Tipo de usuario</label>
+            <select id="user-type" class="select-input">
+              <option value="all">Todos</option>
+              <option value="student">Estudiantes</option>
+              <option value="nonstudent">No Estudiantes</option>
+            </select>
+          </div>
+          <button class="btn-apply" onclick="applyFilters()">Aplicar filtros</button>
         </div>
-        <div class="filter-group">
-          <label for="user-type">Tipo de usuario</label>
-          <select id="user-type" class="select-input">
-            <option value="all">Todos</option>
-            <option value="student">Estudiantes</option>
-            <option value="nonstudent">No Estudiantes</option>
-          </select>
-        </div>
-        <button class="btn-apply" onclick="applyFilters()">Aplicar filtros</button>
-      </div>
+      </details>
     </div>
   </section>
 
