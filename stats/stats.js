@@ -138,12 +138,18 @@ function showContent() {
    FECHAS POR DEFECTO: último año
 ---------------------------------------------------------- */
 function setDefaultDates() {
+  function localDateStr(d) {
+    const y   = d.getFullYear();
+    const m   = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
   const today = new Date();
   const from  = new Date(today);
   from.setFullYear(from.getFullYear() - 1);
 
-  document.getElementById('date-to').value   = today.toISOString().slice(0, 10);
-  document.getElementById('date-from').value = from.toISOString().slice(0, 10);
+  document.getElementById('date-to').value   = localDateStr(today);
+  document.getElementById('date-from').value = localDateStr(from);
 }
 
 /* ----------------------------------------------------------
@@ -472,6 +478,10 @@ async function fetchData() {
 function applyFilters() { fetchData(); }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Colapsar filtros por defecto en mobile
+  if (window.innerWidth <= 600) {
+    document.getElementById('filters-details')?.removeAttribute('open');
+  }
   setDefaultDates();
 
   // Filtros reactivos: se recalcula al cambiar cualquier control

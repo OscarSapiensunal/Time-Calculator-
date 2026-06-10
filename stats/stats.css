@@ -492,3 +492,30 @@ input[type="time"].date-input:invalid {
   .insights-grid   { grid-template-columns: 1fr; }
   .chart-wrap--bar { height: 420px; }
 }
+
+/* ─── Filtros colapsables en mobile ─── */
+.filters-summary { display: none; }
+
+@media (max-width: 600px) {
+  .filters-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    list-style: none;
+    padding: .45rem 0;
+    font-size: .88rem;
+    font-weight: 600;
+    color: var(--color-principal);
+    user-select: none;
+  }
+  .filters-summary::-webkit-details-marker,
+  .filters-summary::marker { display: none; }
+
+  .filters-chevron {
+    display: inline-block;
+    transition: transform .2s;
+    font-size: .75rem;
+  }
+  .filters-details[open] .filters-chevron { transform: rotate(180deg); }
+}

@@ -6,12 +6,10 @@
 
 /* ----------------------------------------------------------
    CONFIGURACIÓN (editable sin tocar otra lógica)
-   horasPorCredito: política académica UNAL vigente (1 cr = 3 h)
 ---------------------------------------------------------- */
 const CONFIG = {
-  totalHoras:      168,
-  horasPorCredito: 3,
-  diasSemana:      7,
+  totalHoras:  168,
+  diasSemana:  7,
 };
 
 /* ----------------------------------------------------------
@@ -50,9 +48,11 @@ function updateCounter() {
   const transitH   = parseFloat(document.getElementById('transit_hours')?.value)     || 1;
   const grooming   = parseFloat(document.getElementById('grooming')?.value)          || 1;
   const houseTasks = parseFloat(document.getElementById('house_tasks')?.value)       || 4;
-  const isStudent  = document.getElementById('is_student')?.checked ?? true;
-  const credits    = isStudent
-                   ? (parseFloat(document.getElementById('credits')?.value) || 0) : 0;
+  const isStudent     = document.getElementById('is_student')?.checked ?? true;
+  const classH        = isStudent
+                      ? (parseFloat(document.getElementById('class_hours')?.value) || 0) : 0;
+  const selfStudyH    = isStudent
+                      ? (parseFloat(document.getElementById('self_study_hours')?.value) || 0) : 0;
   const work       = parseFloat(document.getElementById('work')?.value)              || 0;
   const other      = parseFloat(document.getElementById('other')?.value)             || 0;
   const screen     = parseFloat(document.getElementById('screen')?.value)            || 0;
@@ -62,7 +62,7 @@ function updateCounter() {
 
   const D     = CONFIG.diasSemana;
   const total = (sleep * D) + (food * D) + transitH + (grooming * D)
-              + houseTasks + (credits * CONFIG.horasPorCredito) + work + other
+              + houseTasks + (classH + selfStudyH) + work + other
               + (screen * D) + physical + social + hobby;
 
   const pctUsed = Math.min(100, (total / CONFIG.totalHoras) * 100);
@@ -136,9 +136,11 @@ function calcular() {
   const houseTasks   = parseFloat(document.getElementById('house_tasks').value)        || 4;
 
   // Bloque académico / obligaciones
-  const isStudent  = document.getElementById('is_student')?.checked ?? true;
-  const credits    = isStudent
-                   ? (parseFloat(document.getElementById('credits').value) || 0) : 0;
+  const isStudent      = document.getElementById('is_student')?.checked ?? true;
+  const classHours     = isStudent
+                       ? (parseFloat(document.getElementById('class_hours').value) || 0) : 0;
+  const selfStudyHours = isStudent
+                       ? (parseFloat(document.getElementById('self_study_hours').value) || 0) : 0;
   const work       = parseFloat(document.getElementById('work').value)               || 0;
   const other      = parseFloat(document.getElementById('other').value)              || 0;
 
@@ -160,7 +162,7 @@ function calcular() {
   const hTransit    = transitHours;                // ya viene en horas/semana
   const hGrooming   = grooming    * D;
   const hHouseTasks = houseTasks;                  // ya es semanal
-  const hStudy      = credits     * CONFIG.horasPorCredito;
+  const hStudy        = classHours + selfStudyHours;
   const hWork       = work;                        // ya es semanal
   const hOther      = other;
   const hScreen     = screen      * D;
@@ -201,7 +203,7 @@ function calcular() {
   setResult('food',        hFood,                   'Alimentación');
   setResult('grooming',    hGrooming,               'Cuidado personal');
   setResult('transit',     hTransit,                'Desplazamientos');
-  setResult('study',       hStudy,                  'Carga académica');
+  setResult('study',       hStudy,                  'Clase + estudio autónomo');
   setResult('work',        hWork,                   'Trabajo');
   setResult('obligations', hOther,                  'Otras obligaciones');
   setResult('screen',      hScreen,                 'Ocio digital');
@@ -227,7 +229,7 @@ function calcular() {
   renderFeedback({
     tLibreNeto, tBienestar, tOcioDigital,
     tAcademico, hTransit, hWork,
-    sleep, credits, isStudent,
+    sleep, isStudent,
     hPhysical, hSocial
   });
 
@@ -251,7 +253,8 @@ function calcular() {
     food_hours:               parseFloat(hFood),
     grooming_hours:           parseFloat(hGrooming),
     house_tasks_hours:        parseFloat(hHouseTasks),
-    academic_credits:         parseFloat(credits),
+    class_hours:              parseFloat(classHours),
+    self_study_hours:         parseFloat(selfStudyHours),
     academic_load_hours:      parseFloat(hStudy),
     work_hours:               parseFloat(hWork),
     obligations_hours:        parseFloat(hOther),
@@ -288,17 +291,17 @@ async function saveToSupabase(data) {
 /* Microdatos institucionales por categoría — se muestran en "Así se ve tu semana"
    para invitar a la reflexión sin emitir juicio sobre el dato del usuario. */
 const FACTS = {
-  sleep:       'La OMS recomienda 7–9 h por noche para adultos jóvenes (18–25 años)',
-  food:        'Dedicar 20–30 min por comida favorece la digestión y la saciedad',
+  sleep:       'Los CDC y la OMS recomiendan 7–9 h/noche para adultos de 18–60 años. El sueño consolida la memoria, regula las emociones y protege la salud cardiovascular (CDC, 2024).',
+  food:        'Comer de forma pausada (mínimo 20 min por comida principal) mejora la regulación del apetito y el reconocimiento de la saciedad (Robinson et al., 2014).',
   grooming:    'Una rutina diaria de higiene completa toma en promedio 60–90 min',
   transit:     'Estudiantes de Bogotá invierten en promedio 1.5–2 h/día en desplazamientos',
   study:       'Cada crédito UNAL equivale a 3 h semanales (clase + estudio independiente)',
   obligations: 'Las obligaciones de cuidado y voluntariado cuentan como trabajo invisible',
   work:        'Jornada legal en Colombia: 46 h/semana (desde julio 2025: 44 h)',
   screen:      'Adultos jóvenes promedian 6 h/día en pantallas recreativas (DataReportal 2024)',
-  physical:    'La OMS recomienda mínimo 150 min/semana de actividad física moderada',
-  social:      'La calidad de los vínculos predice el bienestar a largo plazo (Harvard Adult Development Study)',
-  hobby:       'Los hobbies creativos se asocian con menor riesgo de depresión y ansiedad',
+  physical:    'La OMS recomienda ≥150 min/sem de actividad moderada o ≥75 min intensa. No tiene que ser gimnasio: bailar, nadar, subir escaleras o hacer yoga en casa cuenta (OMS, 2020).',
+  social:      'Compartir tiempo presencial con personas cercanas (al menos 2 h/sem) tiene efecto directo sobre el bienestar emocional (Chalela-Naffah et al., Revista Latinoamericana de Investigación).',
+  hobby:       'Las actividades creativas —pintura, música, escritura, meditación— activan zonas del cerebro asociadas al placer y la regulación emocional. El proceso importa más que el resultado (Stuckey & Nobel, American Journal of Public Health, 2010).',
   free:        'El bienestar activo recarga distinto al tiempo libre pasivo',
   total:       'Las 168 h semanales son el único recurso verdaderamente igualitario entre personas'
 };
@@ -494,7 +497,7 @@ function renderChart({ hSleep, hFood, hGrooming, hTransit, tAcademico,
 function renderFeedback({
   tLibreNeto, tBienestar, tOcioDigital,
   tAcademico, hTransit, hWork,
-  sleep, credits, isStudent,
+  sleep, isStudent,
   hPhysical, hSocial
 }) {
   const hSleep         = sleep * CONFIG.diasSemana;
@@ -514,7 +517,10 @@ function renderFeedback({
              No es falta de organización — es que el cubo no cierra.
              Algo está ocupando espacio que no existe: probablemente sueño
              negociado, comidas saltadas o multitarea invisible. Vale la pena
-             revisar qué está cediendo en silencio.`
+             revisar qué está cediendo en silencio. La <a href="https://drive.google.com/file/d/1wcdjd-gvyvrm92v3QPHVvHjC1LDX5ASD/view?usp=sharing"
+             target="_blank" rel="noopener noreferrer"
+             class="feedback-ig-link">Cartilla de Bienestar RAPsi</a>
+             tiene estrategias concretas de afrontamiento para este momento.`
     });
   }
   // 2 · Burnout estructural
@@ -525,7 +531,10 @@ function renderFeedback({
       body: `Estás sosteniendo ${fmt(cargaDura)} h/sem de obligaciones duras
              (estudio + trabajo + transporte) con ${fmt(hSleep / 7)} h de sueño
              por noche. Una semana así es viable; un mes así no lo es. El
-             cuerpo paga con concentración, ánimo y salud antes de que se note.`
+             cuerpo paga con concentración, ánimo y salud antes de que se note. La <a href="https://drive.google.com/file/d/1wcdjd-gvyvrm92v3QPHVvHjC1LDX5ASD/view?usp=sharing"
+             target="_blank" rel="noopener noreferrer"
+             class="feedback-ig-link">Cartilla de Bienestar RAPsi</a>
+             tiene estrategias concretas de afrontamiento para este momento.`
     });
   }
   // 3 · Privación severa de sueño
@@ -537,7 +546,10 @@ function renderFeedback({
              acumulándose. La regulación emocional, la memoria de corto plazo
              y la respuesta inmune dependen del sueño profundo. Una semana
              así se siente como tres. Si no puedes dormir más esta semana,
-             al menos protege un día completo de recuperación.`
+             al menos protege un día completo de recuperación. La <a href="https://drive.google.com/file/d/1wcdjd-gvyvrm92v3QPHVvHjC1LDX5ASD/view?usp=sharing"
+             target="_blank" rel="noopener noreferrer"
+             class="feedback-ig-link">Cartilla de Bienestar RAPsi</a>
+             tiene estrategias concretas de afrontamiento para este momento.`
     });
   }
   // 4 · Procrastinación del sueño por pantallas
@@ -632,11 +644,12 @@ function renderFeedback({
     cards.push({
       type: 'strength', icon: '📖',
       title: 'Carga académica sostenida con balance',
-      body: `Manejas ${fmt(tAcademico)} h/sem de estudio sin sacrificar lo
-             que sostiene esa carga: duermes ${fmt(hSleep / 7)} h por noche
-             y dedicas ${fmt(tBienestar)} h al bienestar activo. La carga
-             alta no es el problema — el problema es la carga alta sin
-             colchón. Tú tienes colchón.`
+      body: `Manejas ${fmt(tAcademico)} h/sem de estudio sin sacrificar
+         lo que sostiene esa carga: duermes ${fmt(hSleep / 7)} h por
+         noche y dedicas ${fmt(tBienestar)} h al bienestar activo.
+         Los estilos de afrontamiento centrados en el problema
+         (planificar, priorizar, buscar apoyo) son los que mejor
+         predicen el bienestar bajo carga alta. Tú estás haciendo eso.`
     });
   }
   // 11 · Descanso en rango OMS
@@ -645,9 +658,10 @@ function renderFeedback({
       type: 'strength', icon: '🌙',
       title: 'Descanso en rango OMS',
       body: `Duermes ${fmt(hSleep / 7)} h por noche, dentro del rango
-             recomendado por la OMS (7–9 h). El sueño es el pilar invisible
-             del rendimiento cognitivo y la regulación emocional: estás
-             cuidando lo que sostiene todo lo demás.`
+             recomendado por los CDC y la OMS (7–9 h). El sueño es el
+             pilar invisible del rendimiento cognitivo: consolida la
+             memoria del día, regula las emociones y reduce el riesgo
+             cardiovascular. Estás cuidando lo que sostiene todo lo demás.`
     });
   }
   // 12 · Vida activa
@@ -655,10 +669,11 @@ function renderFeedback({
     cards.push({
       type: 'strength', icon: '🏃',
       title: 'Cuerpo en movimiento',
-      body: `${fmt(hPhysical)} h/sem de actividad física, por encima del
-             umbral mínimo de la OMS (150 min). El movimiento regular es de
-             las herramientas más sólidas que existen para regular la
-             ansiedad, mejorar el sueño y proteger la salud mental.`
+      body: `${fmt(hPhysical)} h/sem de actividad física. La OMS recomienda
+             150 min de actividad moderada o 75 min intensa por semana —
+             no tiene que ser gimnasio: bailar, caminar rápido, nadar o
+             hacer yoga en casa cuentan. Ese umbral protege contra la
+             ansiedad, mejora el sueño y fortalece la salud mental.`
     });
   }
   // 13 · Red social viva
@@ -667,10 +682,10 @@ function renderFeedback({
       type: 'strength', icon: '💬',
       title: 'Red de apoyo activa',
       body: `Dedicas ${fmt(hSocial)} h semanales a tiempo de calidad con
-             personas que te importan. El Harvard Adult Development Study
-             (80 años siguiendo a las mismas personas) encontró que la
-             calidad de los vínculos predice el bienestar mejor que el
-             dinero, el éxito o los genes. Estás invirtiendo en lo correcto.`
+             personas que te importan. Investigaciones latinoamericanas en
+             bienestar universitario señalan al menos 2 horas presenciales
+             por semana como umbral de efecto protector. Los vínculos no
+             se construyen en crisis — se cultivan antes.`
     });
   }
   // 14 · Higiene digital
@@ -696,8 +711,14 @@ function renderFeedback({
            descansar de verdad y seguir siendo tú. Si algo de lo que viste hoy
            te inquieta,
            <a href="https://www.instagram.com/rapsi.unal/" target="_blank" rel="noopener noreferrer" class="feedback-ig-link">@rapsi.unal</a> y
-           <a href="https://www.instagram.com/acompanamientounal_bog/" target="_blank" rel="noopener noreferrer" class="feedback-ig-link">@acompanamientounal_bog</a>
-           están para acompañarte.`
+           <a href="https://www.instagram.com/acompanamientounal_bog/"
+              target="_blank" rel="noopener noreferrer"
+              class="feedback-ig-link">@acompanamientounal_bog</a>
+           están para acompañarte. Si necesitas orientación profesional,
+           la <a href="https://drive.google.com/file/d/1kB44Fki-kYU-Hty2Sxnd9Dh-dXKSZisG/view?usp=sharing"
+                target="_blank" rel="noopener noreferrer"
+                class="feedback-ig-link">Ruta de Salud Mental UNAL</a>
+           explica cómo acceder a acompañamiento especializado.`
   });
   // ════════════════════════════════════════════════════════
   // RENDERIZAR
@@ -739,19 +760,16 @@ window.addEventListener('scroll', () => {
 document.addEventListener('DOMContentLoaded', () => {
   [
     'sleep', 'food', 'transit_hours', 'grooming', 'house_tasks',
-    'work', 'screen', 'physical_activity', 'social_activity', 'hobby_wellbeing'
+    'work', 'screen', 'physical_activity', 'social_activity', 'hobby_wellbeing',
+    'class_hours', 'self_study_hours'
   ].forEach(syncRange);
 
-  // Reflejar la regla de créditos en el hint del formulario
-  const hpcLabel = document.getElementById('hpc-label');
-  if (hpcLabel) hpcLabel.textContent = CONFIG.horasPorCredito + ' h';
-
-  // Visibilidad condicional del bloque de créditos
-  const isStudentCb  = document.getElementById('is_student');
-  const creditsField = document.getElementById('credits-field');
-  if (isStudentCb && creditsField) {
+  // Visibilidad condicional del bloque académico
+  const isStudentCb   = document.getElementById('is_student');
+  const academicField = document.getElementById('academic-field');
+  if (isStudentCb) {
     isStudentCb.addEventListener('change', () => {
-      creditsField.style.display = isStudentCb.checked ? '' : 'none';
+      if (academicField) academicField.style.display = isStudentCb.checked ? '' : 'none';
       updateCounter();
     });
   }

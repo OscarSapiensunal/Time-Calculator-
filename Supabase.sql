@@ -1,6 +1,6 @@
 -- ============================================================
 --  SISTEMA DE ANÁLISIS DE BIENESTAR UNIVERSITARIO · RAPsi UNAL
---  ESQUEMA MAESTRO CONSOLIDADO · v3.0.1
+--  ESQUEMA MAESTRO CONSOLIDADO · v3.1.0
 --
 --  Este es el script ÚNICO Y DEFINITIVO para recrear la base
 --  de datos desde cero. Unifica:
@@ -16,16 +16,19 @@
 --  Separación estricta entre identidad y análisis agregado.
 --
 --  Motor   : Supabase (PostgreSQL 15+)
---  Versión : 3.0.1 (consolidada)
+--  Versión : 3.1.0 (consolidada)
 --
---  CAMBIOS v3.0.1
+--  CAMBIOS v3.1.0
 --  ─────────────────────────────────────────────────────────────
---  • Nueva política SELECT pública anónima sobre
---    registros_bienestar para que el dashboard estadístico
---    (rol anon) pueda leer agregados y aplicar filtros en
---    tiempo real. Los datos siguen siendo anónimos: no hay
---    PII en la tabla y la política filtra por
---    consent_accepted = true como defensa en profundidad.
+--  • Nuevas columnas class_hours y self_study_hours en
+--    registros_bienestar. El slider de créditos fue reemplazado
+--    por entradas directas de horas de clase y estudio autónomo.
+--  • Trigger recalcula academic_load_hours = class_hours + self_study_hours.
+--    anonymous_mode = true siempre (app sin autenticación v3.1).
+--  • Vista analisis_promedios_bienestar incluye avg_class_hours
+--    y avg_self_study_hours.
+--  • Política RLS INSERT simplificada: solo registros anónimos
+--    (usuario_id IS NULL), sin flujo de auth activo.
 --
 --  USO:
 --    1. Proyecto Supabase nuevo y vacío.
@@ -162,6 +165,16 @@ CREATE TABLE IF NOT EXISTS public.registros_bienestar (
   -- social, voluntariado, compromisos varios (semanal).
   obligations_hours        numeric(5,2) CHECK (obligations_hours >= 0),
 
+  -- v3.1: Inputs directos de carga académica (reemplazan el slider de créditos).
+  -- El trigger calcula academic_load_hours = class_hours + self_study_hours.
+  class_hours              numeric(5,2) NOT NULL DEFAULT 0
+                           CONSTRAINT class_hours_positivo
+                           CHECK (class_hours >= 0),
+
+  self_study_hours         numeric(5,2) NOT NULL DEFAULT 0
+                           CONSTRAINT self_study_hours_positivo
+                           CHECK (self_study_hours >= 0),
+
 
   -- ----------------------------------------------------------
   -- BLOQUE B: TIEMPO DE BIENESTAR Y OCIO
@@ -249,6 +262,11 @@ COMMENT ON COLUMN public.registros_bienestar.academic_load_hours IS
 COMMENT ON COLUMN public.registros_bienestar.work_hours IS
   'Horas semanales de trabajo remunerado, prácticas o pasantías. '
   'Separada de obligations_hours por impacto cualitativo distinto.';
+
+COMMENT ON COLUMN public.registros_bienestar.class_hours IS
+  'v3.1: Horas de clase presencial/virtual a la semana. Reemplaza el slider de créditos.';
+COMMENT ON COLUMN public.registros_bienestar.self_study_hours IS
+  'v3.1: Horas de estudio autónomo a la semana. Se suma con class_hours para academic_load_hours.';
 
 COMMENT ON COLUMN public.registros_bienestar.quality_social_hours IS
   'Horas de socialización significativa en persona. '
@@ -355,16 +373,21 @@ AS $$
 DECLARE
   v_semana_total CONSTANT numeric := 168.0;
 BEGIN
-  -- Bloque A: Tiempo estructural obligatorio (incluye work_hours v3)
+  -- v3.1: academic_load_hours = class_hours + self_study_hours
+  NEW.academic_load_hours :=
+    COALESCE(NEW.class_hours,      0) +
+    COALESCE(NEW.self_study_hours, 0);
+
+  -- Bloque A: Tiempo estructural obligatorio
   NEW.occupied_time :=
-    COALESCE(NEW.sleep_hours,            0) +
-    COALESCE(NEW.transport_hours,        0) +
-    COALESCE(NEW.food_hours,             0) +
-    COALESCE(NEW.grooming_hours,         0) +
-    COALESCE(NEW.house_tasks_hours,      0) +
-    COALESCE(NEW.academic_load_hours,    0) +
-    COALESCE(NEW.work_hours,             0) +
-    COALESCE(NEW.obligations_hours,      0);
+    COALESCE(NEW.sleep_hours,         0) +
+    COALESCE(NEW.transport_hours,     0) +
+    COALESCE(NEW.food_hours,          0) +
+    COALESCE(NEW.grooming_hours,      0) +
+    COALESCE(NEW.house_tasks_hours,   0) +
+    COALESCE(NEW.academic_load_hours, 0) +
+    COALESCE(NEW.work_hours,          0) +
+    COALESCE(NEW.obligations_hours,   0);
 
   -- Bloque B: Tiempo de bienestar activo
   NEW.wellbeing_time :=
@@ -376,18 +399,16 @@ BEGIN
   -- Bloque C: tiempo disponible (puede ser negativo → sobrecarga)
   NEW.available_time := v_semana_total - NEW.occupied_time;
 
-  -- Coherencia: si no hay usuario_id, modo es anónimo
-  IF NEW.usuario_id IS NULL THEN
-    NEW.anonymous_mode := true;
-  END IF;
+  -- v3.1: sin auth, siempre anónimo
+  NEW.anonymous_mode := true;
 
   RETURN NEW;
 END;
 $$;
 
 COMMENT ON FUNCTION public.calcular_agregados_bienestar() IS
-  'v3: Recalcula occupied_time, wellbeing_time y available_time antes de '
-  'cada INSERT/UPDATE. Incluye work_hours en occupied_time. '
+  'v3.1: Recalcula academic_load_hours (class+study), occupied_time, wellbeing_time '
+  'y available_time antes de cada INSERT/UPDATE. anonymous_mode siempre TRUE (sin auth). '
   'SECURITY DEFINER garantiza consistencia independientemente del rol que inserte.';
 
 -- Asociar el trigger a la tabla
@@ -505,20 +526,13 @@ CREATE POLICY "registros_insert_publico"
   FOR INSERT
   TO anon, authenticated
   WITH CHECK (
-    (
-      auth.uid() IS NULL AND usuario_id IS NULL
-    )
-    OR
-    (
-      auth.uid() IS NOT NULL
-      AND (usuario_id = auth.uid() OR usuario_id IS NULL)
-    )
+    consent_accepted = true
+    AND usuario_id IS NULL
   );
 
 COMMENT ON POLICY "registros_insert_publico" ON public.registros_bienestar IS
-  'Permite INSERT a cualquier visitante. '
-  'Anónimos: usuario_id debe ser NULL. '
-  'Autenticados: usuario_id debe ser su propio UUID o NULL.';
+  'v3.1: Solo INSERT anónimos (usuario_id IS NULL). '
+  'La app no usa autenticación. consent_accepted como defensa en profundidad.';
 
 -- 5 | SELECT solo del propio historial
 --  Los registros anónimos (usuario_id IS NULL) son inaccesibles
@@ -685,6 +699,7 @@ COMMENT ON FUNCTION public.rapsi_informe_agregado(integer) IS
 --  Privacidad: NO expone usuario_id ni filas individuales.
 -- ============================================================
 
+DROP VIEW IF EXISTS public.analisis_promedios_bienestar;
 CREATE OR REPLACE VIEW public.analisis_promedios_bienestar AS
 SELECT
 
@@ -700,6 +715,8 @@ SELECT
   ROUND(AVG(food_hours),              2)               AS avg_food_hours,
   ROUND(AVG(grooming_hours),          2)               AS avg_grooming_hours,
   ROUND(AVG(house_tasks_hours),       2)               AS avg_house_tasks_hours,
+  ROUND(AVG(class_hours),             2)               AS avg_class_hours,
+  ROUND(AVG(self_study_hours),        2)               AS avg_self_study_hours,
   ROUND(AVG(academic_load_hours),     2)               AS avg_academic_load_hours,
   ROUND(AVG(academic_credits),        2)               AS avg_academic_credits,
   ROUND(AVG(work_hours),              2)               AS avg_work_hours,
@@ -735,9 +752,9 @@ GROUP BY is_student
 ORDER BY is_student DESC;   -- TRUE (estudiantes) primero
 
 COMMENT ON VIEW public.analisis_promedios_bienestar IS
-  'v3: Vista de análisis agregado para el Dashboard de RAPsi. '
-  'Incluye avg_work_hours. Segmenta entre estudiantes y no estudiantes. '
-  'NO expone usuario_id ni filas individuales. Cumple Ley 1581/2012.';
+  'v3.1: Vista de análisis agregado. Incluye avg_class_hours y avg_self_study_hours. '
+  'academic_load_hours = class_hours + self_study_hours (calculado por trigger). '
+  'Segmenta entre estudiantes y no estudiantes. Cumple Ley 1581/2012.';
 
 
 -- ============================================================
