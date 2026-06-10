@@ -300,7 +300,7 @@ async function saveToSupabase(data) {
    para invitar a la reflexión sin emitir juicio sobre el dato del usuario. */
 const FACTS = {
   sleep:       'Los CDC y la OMS recomiendan 7–9 h/noche para adultos de 18–60 años. El sueño consolida la memoria, regula las emociones y protege la salud cardiovascular (CDC, 2024).',
-  food:        'Comer de forma pausada (mínimo 20 min por comida principal) mejora la regulación del apetito y el reconocimiento de la saciedad (Robinson et al., 2014).',
+  food:        'Comer despacio (al menos 20 min por comida, sin pantallas) permite al cuerpo liberar a tiempo las señales de saciedad. Mantener horarios regulares de desayuno, almuerzo y cena favorece hábitos alimentarios saludables a largo plazo (Kokkinos et al., 2009; OMS, 2024).',
   grooming:    'Una rutina diaria de higiene completa toma en promedio 60–90 min',
   transit:     'Estudiantes de Bogotá invierten en promedio 1.5–2 h/día en desplazamientos',
   study:       'Cada crédito UNAL equivale a 3 h semanales (clase + estudio independiente)',
@@ -569,7 +569,9 @@ function renderFeedback({
              de sueño por noche. La calidad del sueño cae aunque cierres los
              ojos: la luz azul retrasa la melatonina y el "una más" nocturno
              acumula deuda cognitiva. El experimento que sí funciona: poner
-             el celular a cargar lejos de la cama.`
+             el celular a cargar lejos de la cama. Además, hacer dos actividades
+             a la vez —scrollear mientras comes o estudias— consume más energía
+             cognitiva y reduce la concentración disponible para cada una.`
     });
   }
   // 5 · Evasión digital (no simple consumo alto)
@@ -581,7 +583,9 @@ function renderFeedback({
              ${fmt(tBienestar)} h en actividades restauradoras activas
              (deporte, vínculos, hobbies). A veces no es ocio, es agotamiento
              buscando salida. La pregunta honesta: ¿de qué descansas cuando
-             scrolleas?`
+             scrolleas? Tu celular registra tu uso real en Bienestar Digital (Android)
+             o Tiempo en pantalla (iOS) — el número a veces sorprende y ayuda a
+             tomar decisiones más conscientes.`
     });
   }
   // 6 · Aislamiento social (regla independiente, no condicionada a estudio)
@@ -727,7 +731,12 @@ function renderFeedback({
                 target="_blank" rel="noopener noreferrer"
                 class="feedback-ig-link">Ruta de Salud Mental UNAL</a>
            explica cómo acceder a acompañamiento especializado.
-           <br><br>
+           <br>
+           Si te interesa fortalecer habilidades, la
+           <a href="https://sites.google.com/unal.edu.co/escuela-habilidades-aai/inicio"
+              target="_blank" rel="noopener noreferrer"
+              class="feedback-ig-link">Escuela de Habilidades para la Vida UNAL</a>
+           tiene talleres abiertos a toda la comunidad.<br><br>
            <a href="https://docs.google.com/document/d/1u4TNtav8ljhSD3NhbAP3uy-_0vQlXI0MNvAuqemWISU/edit?usp=sharing"
               target="_blank" rel="noopener noreferrer"
               class="feedback-ig-link">Ver las fuentes bibliográficas</a>

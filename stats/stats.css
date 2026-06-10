@@ -146,15 +146,6 @@ input[type="time"].date-input:invalid {
   background-position: right .7rem center;
 }
 
-/* Fila combinada fecha + hora */
-.datetime-row {
-  display: flex;
-  gap: .4rem;
-  align-items: center;
-}
-
-.time-input { width: 108px; }
-
 .btn-apply {
   font-family: var(--font-body);
   font-size: .88rem;
@@ -474,16 +465,6 @@ input[type="time"].date-input:invalid {
   .filters-bar {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .datetime-row {
-    flex-direction: column;
-    gap: .55rem;
-  }
-
-  .datetime-row .date-input,
-  .datetime-row .time-input {
-    width: 100%;
   }
 
   .btn-apply { width: 100%; }

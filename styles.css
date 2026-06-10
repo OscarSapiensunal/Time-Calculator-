@@ -1541,3 +1541,20 @@ footer {
 .btn-calc.btn-calc--over:hover {
   background: #a52f2f !important;
 }
+
+.why-hours-tip summary {
+  font-size: .75rem;
+  color: var(--color-text-muted, #6c8592);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+.why-hours-tip summary::-webkit-details-marker { display: none; }
+.why-hours-tip[open] span {
+  display: block;
+  font-size: .75rem;
+  color: var(--color-text-muted, #6c8592);
+  margin-top: .25rem;
+  max-width: 320px;
+  line-height: 1.4;
+}
