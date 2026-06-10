@@ -432,16 +432,20 @@ async function fetchData() {
     .order('created_at', { ascending: false })
     .limit(5000);
 
-  // Hora local de Bogotá (UTC-5, sin DST). Si la app se despliega
-  // a más sedes, mover este offset a una constante de configuración.
-  const TZ_OFFSET = '-05:00';
+  // Convierte datetime de Bogotá (UTC-5) a ISO UTC puro
+  // Evita bugs de parsing de timezone offset en PostgREST
+  function toUTC(dateStr, timeStr, isEnd) {
+    const t = isEnd
+      ? `${timeStr || '23:59'}:59`
+      : `${timeStr || '00:00'}:00`;
+    return new Date(`${dateStr}T${t}-05:00`).toISOString();
+  }
+
   if (dateFrom) {
-    const isoFrom = `${dateFrom}T${timeFrom || '00:00'}:00${TZ_OFFSET}`;
-    query = query.gte('created_at', isoFrom);
+    query = query.gte('created_at', toUTC(dateFrom, timeFrom, false));
   }
   if (dateTo) {
-    const isoTo = `${dateTo}T${timeTo || '23:59'}:59${TZ_OFFSET}`;
-    query = query.lte('created_at', isoTo);
+    query = query.lte('created_at', toUTC(dateTo,   timeTo,   true));
   }
 
   if (userType === 'student')    query = query.eq('is_student', true);
