@@ -79,9 +79,10 @@ function updateCounter() {
   if (wrapEl)     wrapEl.classList.toggle('hc-over', isOver);
   if (overflowEl) overflowEl.hidden = !isOver;
   if (btnCalc) {
-    btnCalc.disabled = isOver;
+    btnCalc.disabled = false;
+    btnCalc.classList.toggle('btn-calc--over', isOver);
     btnCalc.textContent = isOver
-      ? 'Estás gastando más de 168 h/semana — revisa tus campos'
+      ? '⚠️ Superaste las 168 h · ajusta tus valores antes de calcular'
       : 'Calcular mi tiempo disponible ⟶';
   }
 }
@@ -108,6 +109,13 @@ let weekChart = null;
    Orquesta lectura → cálculo → UI → gráfico → feedback
 ========================================================== */
 function calcular() {
+  const _calcBtn = document.querySelector('.btn-calc');
+  if (_calcBtn?.classList.contains('btn-calc--over')) {
+    _calcBtn.classList.remove('shake');
+    void _calcBtn.offsetWidth;
+    _calcBtn.classList.add('shake');
+    return;
+  }
 
   // --------------------------------------------------------
   // 1. VALIDACIÓN DEL CONSENTIMIENTO (Ley 1581/2012)
@@ -298,7 +306,7 @@ const FACTS = {
   study:       'Cada crédito UNAL equivale a 3 h semanales (clase + estudio independiente)',
   obligations: 'Las obligaciones de cuidado y voluntariado cuentan como trabajo invisible',
   work:        'Jornada legal en Colombia: 46 h/semana (desde julio 2025: 44 h)',
-  screen:      'Adultos jóvenes promedian 6 h/día en pantallas recreativas (DataReportal 2024)',
+  screen:      'En universitarios de 21–23 años, más de 3 h/día en pantallas recreativas se asocia con mayor ansiedad, trastornos del sueño y aislamiento social (Osman, 2025). El promedio en jóvenes adultos es de 6 h/día (DataReportal 2024).',
   physical:    'La OMS recomienda ≥150 min/sem de actividad moderada o ≥75 min intensa. No tiene que ser gimnasio: bailar, nadar, subir escaleras o hacer yoga en casa cuenta (OMS, 2020).',
   social:      'Compartir tiempo presencial con personas cercanas (al menos 2 h/sem) tiene efecto directo sobre el bienestar emocional (Chalela-Naffah et al., Revista Latinoamericana de Investigación).',
   hobby:       'Las actividades creativas —pintura, música, escritura, meditación— activan zonas del cerebro asociadas al placer y la regulación emocional. El proceso importa más que el resultado (Stuckey & Nobel, American Journal of Public Health, 2010).',
@@ -718,7 +726,12 @@ function renderFeedback({
            la <a href="https://drive.google.com/file/d/1kB44Fki-kYU-Hty2Sxnd9Dh-dXKSZisG/view?usp=sharing"
                 target="_blank" rel="noopener noreferrer"
                 class="feedback-ig-link">Ruta de Salud Mental UNAL</a>
-           explica cómo acceder a acompañamiento especializado.`
+           explica cómo acceder a acompañamiento especializado.
+           <br><br>
+           <a href="https://docs.google.com/document/d/1u4TNtav8ljhSD3NhbAP3uy-_0vQlXI0MNvAuqemWISU/edit?usp=sharing"
+              target="_blank" rel="noopener noreferrer"
+              class="feedback-ig-link">Ver las fuentes bibliográficas</a>
+           de este análisis.`
   });
   // ════════════════════════════════════════════════════════
   // RENDERIZAR

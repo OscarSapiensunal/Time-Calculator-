@@ -374,26 +374,27 @@ nav {
   margin-bottom: 3rem;
 }
 
-/* Grid: 1 columna móvil → 2 tablet → 3 escritorio */
+/* Grid: 1 col móvil → 2 iguales tablet → 2 asimétricas escritorio */
 .calc-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
 }
 
-@media (min-width: 700px) {
-  .calc-grid { grid-template-columns: 1fr 1fr; }
-}
-
-/* Tarjeta Bienestar ocupa 2 col en tablet para que sus 6 sliders tengan espacio */
-@media (min-width: 700px) and (max-width: 1099px) {
-  .calc-grid .input-group:last-child {
-    grid-column: 1 / -1;
+@media (min-width: 600px) {
+  .calc-grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
   }
 }
 
-@media (min-width: 1100px) {
-  .calc-grid { grid-template-columns: 1fr 1fr 1fr; }
+@media (min-width: 900px) {
+  .calc-grid {
+    grid-template-columns: 1fr 1.5fr;
+    max-width: 960px;
+    margin: 0 auto;
+    align-items: start;
+  }
 }
 
 /* Grupos de inputs */
@@ -1286,8 +1287,15 @@ footer {
   transition: width .25s ease, background .25s;
 }
 
-.hours-counter.hc-over .hc-value { color: var(--color-acento-f); }
-.hours-counter.hc-over .hc-bar   { background: var(--color-acento-f); }
+.hours-counter.hc-over #hc-used {
+  color: #c94040;
+  font-weight: 700;
+  transition: color 0.2s;
+}
+.hours-counter.hc-over .hc-bar {
+  background: #c94040 !important;
+  transition: background 0.3s;
+}
 
 /* ============================================================
    NOTA DE NO DUPLICIDAD
@@ -1390,7 +1398,8 @@ footer {
 .hours-overflow-body {
   font-size: .9rem;
   line-height: 1.5;
-  color: var(--color-text);
+  color: #c94040;
+  font-weight: 600;
 }
 .hours-overflow-body strong {
   display: block;
@@ -1508,4 +1517,27 @@ footer {
 }
 @media (max-width: 767px) {
   .nav-mobile { display: block; }
+}
+
+@keyframes rapsi-shake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-8px); }
+  40%     { transform: translateX(8px); }
+  60%     { transform: translateX(-5px); }
+  80%     { transform: translateX(5px); }
+}
+
+.btn-calc.shake {
+  animation: rapsi-shake 0.45s ease-in-out;
+}
+
+.btn-calc.btn-calc--over {
+  background: #c94040 !important;
+  color: #fff !important;
+  cursor: pointer !important;
+  opacity: 1 !important;
+}
+
+.btn-calc.btn-calc--over:hover {
+  background: #a52f2f !important;
 }
