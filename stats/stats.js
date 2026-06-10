@@ -422,8 +422,6 @@ async function fetchData() {
 
   const dateFrom = document.getElementById('date-from').value;
   const dateTo   = document.getElementById('date-to').value;
-  const timeFrom = document.getElementById('time-from').value;
-  const timeTo   = document.getElementById('time-to').value;
   const userType = document.getElementById('user-type').value;
 
   let query = window.supabaseClient
@@ -432,21 +430,12 @@ async function fetchData() {
     .order('created_at', { ascending: false })
     .limit(5000);
 
-  // Convierte datetime de Bogotá (UTC-5) a ISO UTC puro
-  // Evita bugs de parsing de timezone offset en PostgREST
-  function toUTC(dateStr, timeStr, isEnd) {
-    const t = isEnd
-      ? `${timeStr || '23:59'}:59`
-      : `${timeStr || '00:00'}:00`;
+  function dayUTC(dateStr, isEnd) {
+    const t = isEnd ? '23:59:59' : '00:00:00';
     return new Date(`${dateStr}T${t}-05:00`).toISOString();
   }
-
-  if (dateFrom) {
-    query = query.gte('created_at', toUTC(dateFrom, timeFrom, false));
-  }
-  if (dateTo) {
-    query = query.lte('created_at', toUTC(dateTo,   timeTo,   true));
-  }
+  if (dateFrom) query = query.gte('created_at', dayUTC(dateFrom, false));
+  if (dateTo)   query = query.lte('created_at', dayUTC(dateTo,   true));
 
   if (userType === 'student')    query = query.eq('is_student', true);
   if (userType === 'nonstudent') query = query.eq('is_student', false);
@@ -489,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setDefaultDates();
 
   // Filtros reactivos: se recalcula al cambiar cualquier control
-  ['date-from', 'date-to', 'time-from', 'time-to', 'user-type'].forEach(id =>
+  ['date-from', 'date-to', 'user-type'].forEach(id =>
     document.getElementById(id).addEventListener('change', fetchData)
   );
 
