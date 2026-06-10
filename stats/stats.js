@@ -409,7 +409,7 @@ const COLS_SELECT = [
   'sleep_hours', 'food_hours', 'grooming_hours', 'transport_hours',
   'academic_load_hours', 'work_hours', 'obligations_hours', 'house_tasks_hours',
   'scrolling_hours', 'physical_activity_hours', 'quality_social_hours',
-  'other_hobbies_hours', 'available_time', 'is_student',
+  'other_hobbies_hours', 'available_time', 'is_student', 'created_at',
 ].join(', ');
 
 /* ----------------------------------------------------------
@@ -430,13 +430,6 @@ async function fetchData() {
     .order('created_at', { ascending: false })
     .limit(5000);
 
-  function dayUTC(dateStr, isEnd) {
-    const t = isEnd ? '23:59:59' : '00:00:00';
-    return new Date(`${dateStr}T${t}-05:00`).toISOString();
-  }
-  if (dateFrom) query = query.gte('created_at', dayUTC(dateFrom, false));
-  if (dateTo)   query = query.lte('created_at', dayUTC(dateTo,   true));
-
   if (userType === 'student')    query = query.eq('is_student', true);
   if (userType === 'nonstudent') query = query.eq('is_student', false);
 
@@ -450,16 +443,32 @@ async function fetchData() {
 
   console.log(`[Stats] Registros obtenidos: ${data?.length ?? 0}`);
 
-  if (!data || data.length === 0) {
+  // Filtrado client-side por fecha (UTC-5 = Colombia, sin DST).
+  // PostgREST presentaba bugs de parsing con timestamps con offset.
+  const fromMs = dateFrom
+    ? new Date(`${dateFrom}T00:00:00-05:00`).getTime() : null;
+  const toMs   = dateTo
+    ? new Date(`${dateTo}T23:59:59-05:00`).getTime()   : null;
+
+  const filtered = (data || []).filter(r => {
+    const ts = new Date(r.created_at).getTime();
+    if (fromMs !== null && ts < fromMs) return false;
+    if (toMs   !== null && ts > toMs)   return false;
+    return true;
+  });
+
+  console.log(`[Stats] Registros tras filtro de fecha: ${filtered.length}`);
+
+  if (!filtered.length) {
     showEmpty('No se encontraron registros para los filtros seleccionados.');
     return;
   }
 
   destroyCharts();
-  const avgs = computeClientAverages(data);
+  const avgs = computeClientAverages(filtered);
 
   showContent();
-  updateKPIs(avgs, data.length);
+  updateKPIs(avgs, filtered.length);
   renderInsights(avgs);
   renderBarChart(avgs);
   renderDoughnutChart(avgs);

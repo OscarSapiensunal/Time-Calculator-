@@ -1558,3 +1558,39 @@ footer {
   max-width: 320px;
   line-height: 1.4;
 }
+
+/* Sliders en 2 columnas dentro de cada bloque */
+.sliders-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 2.5rem;
+  row-gap: 0;
+  position: relative;
+}
+
+/* Línea divisoria fantasma entre columnas */
+.sliders-area::before {
+  content: '';
+  position: absolute;
+  left: calc(50% - 1px);
+  top: 0.75rem;
+  bottom: 0.75rem;
+  width: 1px;
+  background: rgba(39, 84, 108, 0.09);
+  pointer-events: none;
+}
+
+/* Elementos que ocupan las dos columnas */
+.sliders-area .col-full {
+  grid-column: 1 / -1;
+}
+
+/* En móvil, todo en una columna */
+@media (max-width: 640px) {
+  .sliders-area {
+    grid-template-columns: 1fr;
+  }
+  .sliders-area::before {
+    display: none;
+  }
+}
