@@ -1,14 +1,7 @@
 /* ============================================================
    RAPsi UNAL — Dashboard de Análisis de Bienestar
-   stats.js  ·  v2 — Consulta robusta, Insights, Dona interactiva
+   stats.js  ·  v3 — 100% estático, datos desde JSON local
 ============================================================ */
-
-/* ----------------------------------------------------------
-   SUPABASE — misma configuración que app.js en la raíz
----------------------------------------------------------- */
-const SUPABASE_URL      = "https://gczrxdubzzuiuxuxvxsm.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_yJ_cSM-COnRQfZG7US5c8g_26o8SYS1";
-window.supabaseClient   = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ----------------------------------------------------------
    INSTANCIAS DE GRÁFICAS
@@ -135,22 +128,31 @@ function showContent() {
 }
 
 /* ----------------------------------------------------------
-   FECHAS POR DEFECTO: último año
+   TIMELINE — estado del dominio temporal (data-driven)
+   Se configura a partir de los created_at reales del JSON:
+   el día más antiguo es el offset 0 y el más reciente, maxOff.
 ---------------------------------------------------------- */
-function setDefaultDates() {
-  function localDateStr(d) {
-    const y   = d.getFullYear();
-    const m   = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  }
-  const today = new Date();
-  const from  = new Date(today);
-  from.setFullYear(from.getFullYear() - 1);
+let ALL_RECORDS = [];
+const MS_DAY        = 86400000;
+const MESES_ABBR    = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const MILESTONE_YMD = '2026-05-21';   // Jueves · Feria de las Emociones
+const TL = { baseMs: 0, maxOff: 0, milestoneOff: null };
 
-  document.getElementById('date-to').value   = localDateStr(today);
-  document.getElementById('date-from').value = localDateStr(from);
+// created_at (UTC) → día calendario en Colombia (UTC-5, sin DST) "YYYY-MM-DD"
+function colombiaDay(ms) {
+  return new Date(ms - 5 * 3600 * 1000).toISOString().slice(0, 10);
 }
+// offset (días desde el día más antiguo) → "YYYY-MM-DD"
+function offsetToYMD(off) {
+  return new Date(TL.baseMs + off * MS_DAY).toISOString().slice(0, 10);
+}
+// "YYYY-MM-DD" → instante (ms) del inicio o fin del día en Colombia
+function ymdToMs(ymd, endOfDay) {
+  return new Date(`${ymd}T${endOfDay ? '23:59:59' : '00:00:00'}-05:00`).getTime();
+}
+function ymdToLabel(ymd) { const [y, m, d] = ymd.split('-').map(Number); return `${d} ${MESES_ABBR[m - 1]} ${y}`; }
+function ymdToShort(ymd) { const [, m, d] = ymd.split('-').map(Number);  return `${d} ${MESES_ABBR[m - 1]}`; }
+function pctOf(off)      { return TL.maxOff ? (off / TL.maxOff) * 100 : 0; }
 
 /* ----------------------------------------------------------
    KPI CARDS
@@ -403,61 +405,99 @@ function renderDoughnutLegend(data, total) {
 }
 
 /* ----------------------------------------------------------
-   COLUMNAS QUE SE SOLICITAN A registros_bienestar
+   ARCHIVO LOCAL CON LOS REGISTROS DE registros_bienestar
 ---------------------------------------------------------- */
-const COLS_SELECT = [
-  'sleep_hours', 'food_hours', 'grooming_hours', 'transport_hours',
-  'academic_load_hours', 'work_hours', 'obligations_hours', 'house_tasks_hours',
-  'scrolling_hours', 'physical_activity_hours', 'quality_social_hours',
-  'other_hobbies_hours', 'available_time', 'is_student', 'created_at',
-].join(', ');
+const DATA_FILE = 'registros_bienestar_rows.json';
 
 /* ----------------------------------------------------------
-   CONSULTA PRINCIPAL A SUPABASE
-   Lee registros_bienestar directamente para soportar filtros de fecha/hora
-   y tipo de usuario en tiempo real. Los promedios se calculan en cliente.
+   CONFIGURACIÓN DEL TIMELINE A PARTIR DE LOS DATOS
+   Calcula el rango real [min, max] de created_at y ajusta los
+   extremos del slider para que coincidan exactamente con los
+   datos disponibles. Posiciona (o esconde) el hito de la Feria.
 ---------------------------------------------------------- */
-async function fetchData() {
-  showLoading();
+function setupTimeline() {
+  const times = ALL_RECORDS
+    .map(r => new Date(r.created_at).getTime())
+    .filter(t => !Number.isNaN(t));
 
-  const dateFrom = document.getElementById('date-from').value;
-  const dateTo   = document.getElementById('date-to').value;
-  const userType = document.getElementById('user-type').value;
+  const minDay = colombiaDay(Math.min(...times));
+  const maxDay = colombiaDay(Math.max(...times));
 
-  let query = window.supabaseClient
-    .from('registros_bienestar')
-    .select(COLS_SELECT)
-    .order('created_at', { ascending: false })
-    .limit(5000);
+  TL.baseMs = ymdToMs(minDay, false);
+  TL.maxOff = Math.round((ymdToMs(maxDay, false) - TL.baseMs) / MS_DAY);
 
-  if (userType === 'student')    query = query.eq('is_student', true);
-  if (userType === 'nonstudent') query = query.eq('is_student', false);
+  // Offset del hito (21 may 2026) dentro del dominio real de datos
+  const mOff = Math.round((ymdToMs(MILESTONE_YMD, false) - TL.baseMs) / MS_DAY);
+  TL.milestoneOff = (mOff >= 0 && mOff <= TL.maxOff) ? mOff : null;
 
-  const { data, error } = await query;
+  const from = document.getElementById('range-from');
+  const to   = document.getElementById('range-to');
+  [from, to].forEach(el => { el.min = 0; el.max = TL.maxOff; el.step = 1; });
+  from.value = 0;
+  to.value   = TL.maxOff;
 
-  if (error) {
-    console.error('[Stats] Error Supabase:', error.code, error.message, error.details);
-    showEmpty('Error al conectar con la base de datos. Revisa la consola del navegador (F12).');
-    return;
+  // Muestra el hito sólo si la Feria cae dentro del rango de datos
+  const milestone = document.getElementById('tl-milestone');
+  if (milestone) {
+    if (TL.milestoneOff === null) {
+      milestone.style.display = 'none';
+    } else {
+      milestone.style.display = '';
+      milestone.style.left = pctOf(TL.milestoneOff) + '%';
+    }
   }
 
-  console.log(`[Stats] Registros obtenidos: ${data?.length ?? 0}`);
+  console.log(`[Stats] Timeline: ${minDay} → ${maxDay} (${TL.maxOff} días)` +
+              (TL.milestoneOff !== null ? ` · Feria en offset ${TL.milestoneOff}` : ' · Feria fuera de rango'));
 
-  // Filtrado client-side por fecha (UTC-5 = Colombia, sin DST).
-  // PostgREST presentaba bugs de parsing con timestamps con offset.
-  const fromMs = dateFrom
-    ? new Date(`${dateFrom}T00:00:00-05:00`).getTime() : null;
-  const toMs   = dateTo
-    ? new Date(`${dateTo}T23:59:59-05:00`).getTime()   : null;
+  syncTimelineUI();
+}
 
-  const filtered = (data || []).filter(r => {
+/* ----------------------------------------------------------
+   SINCRONIZA LA UI DEL SLIDER (relleno, burbujas, etiquetas)
+   con la posición actual de las manijas. No filtra datos.
+---------------------------------------------------------- */
+function syncTimelineUI() {
+  const a = parseInt(document.getElementById('range-from').value, 10);
+  const b = parseInt(document.getElementById('range-to').value, 10);
+  const pa = pctOf(a), pb = pctOf(b);
+
+  const fill = document.getElementById('tl-fill');
+  fill.style.left  = pa + '%';
+  fill.style.width = (pb - pa) + '%';
+
+  const bFrom = document.getElementById('tl-bubble-from');
+  const bTo   = document.getElementById('tl-bubble-to');
+  bFrom.style.left = pa + '%'; bFrom.textContent = ymdToShort(offsetToYMD(a));
+  bTo.style.left   = pb + '%'; bTo.textContent   = ymdToShort(offsetToYMD(b));
+
+  document.getElementById('tl-from-label').textContent = ymdToLabel(offsetToYMD(a));
+  document.getElementById('tl-to-label').textContent   = ymdToLabel(offsetToYMD(b));
+}
+
+/* ----------------------------------------------------------
+   FILTRADO Y RENDER
+   Lee la posición del slider + el tipo de usuario y recalcula
+   KPIs, insights y gráficas con el subconjunto seleccionado
+   (todo en cliente, sobre ALL_RECORDS ya cargado en memoria).
+---------------------------------------------------------- */
+function renderFiltered() {
+  const a = parseInt(document.getElementById('range-from').value, 10);
+  const b = parseInt(document.getElementById('range-to').value, 10);
+  const userType = document.getElementById('user-type').value;
+
+  const fromMs = ymdToMs(offsetToYMD(a), false);
+  const toMs   = ymdToMs(offsetToYMD(b), true);
+
+  let filtered = ALL_RECORDS.filter(r => {
     const ts = new Date(r.created_at).getTime();
-    if (fromMs !== null && ts < fromMs) return false;
-    if (toMs   !== null && ts > toMs)   return false;
-    return true;
+    return ts >= fromMs && ts <= toMs;
   });
 
-  console.log(`[Stats] Registros tras filtro de fecha: ${filtered.length}`);
+  if (userType === 'student')    filtered = filtered.filter(r => r.is_student === true);
+  if (userType === 'nonstudent') filtered = filtered.filter(r => r.is_student === false);
+
+  console.log(`[Stats] ${offsetToYMD(a)} → ${offsetToYMD(b)} · ${userType} · ${filtered.length} registros`);
 
   if (!filtered.length) {
     showEmpty('No se encontraron registros para los filtros seleccionados.');
@@ -475,21 +515,97 @@ async function fetchData() {
 }
 
 /* ----------------------------------------------------------
-   PUNTO DE ENTRADA
+   ACCESO RÁPIDO AL HITO — fija el filtro al día exacto de la
+   Feria de las Emociones (21 may 2026) y refresca todo para
+   mostrar de inmediato los promedios e insights de ese día.
 ---------------------------------------------------------- */
-function applyFilters() { fetchData(); }
+function jumpToMilestone() {
+  if (TL.milestoneOff === null) return;
+  document.getElementById('range-from').value = TL.milestoneOff;
+  document.getElementById('range-to').value   = TL.milestoneOff;
+  syncTimelineUI();
+  renderFiltered();
+}
 
-document.addEventListener('DOMContentLoaded', () => {
+/* ----------------------------------------------------------
+   EVENTOS DEL SLIDER
+   - input  → feedback visual en vivo (sin recalcular gráficas)
+   - change → recalcula KPIs/gráficas al soltar la manija
+   Snap magnético: al soltar una manija a ≤1 día de la Feria,
+   se ajusta exactamente al 21 de mayo (facilita aterrizar en
+   ese día; el botón del hito colapsa el filtro a ese único día).
+---------------------------------------------------------- */
+function wireTimelineEvents() {
+  const from = document.getElementById('range-from');
+  const to   = document.getElementById('range-to');
+
+  function magnet(el) {
+    if (TL.milestoneOff !== null &&
+        Math.abs(parseInt(el.value, 10) - TL.milestoneOff) <= 1) {
+      el.value = TL.milestoneOff;
+    }
+  }
+
+  from.addEventListener('input', () => {
+    if (parseInt(from.value, 10) > parseInt(to.value, 10)) from.value = to.value;
+    syncTimelineUI();
+  });
+  to.addEventListener('input', () => {
+    if (parseInt(to.value, 10) < parseInt(from.value, 10)) to.value = from.value;
+    syncTimelineUI();
+  });
+  from.addEventListener('change', () => {
+    magnet(from);
+    if (parseInt(from.value, 10) > parseInt(to.value, 10)) from.value = to.value;
+    syncTimelineUI();
+    renderFiltered();
+  });
+  to.addEventListener('change', () => {
+    magnet(to);
+    if (parseInt(to.value, 10) < parseInt(from.value, 10)) to.value = from.value;
+    syncTimelineUI();
+    renderFiltered();
+  });
+
+  document.getElementById('user-type').addEventListener('change', renderFiltered);
+
+  const milestone = document.getElementById('tl-milestone');
+  if (milestone) milestone.addEventListener('click', jumpToMilestone);
+}
+
+/* ----------------------------------------------------------
+   PUNTO DE ENTRADA
+   Carga única del JSON, configura el timeline desde los datos
+   reales y pinta el estado inicial (rango completo).
+---------------------------------------------------------- */
+function applyFilters() { renderFiltered(); }
+
+async function initDashboard() {
   // Colapsar filtros por defecto en mobile
   if (window.innerWidth <= 600) {
     document.getElementById('filters-details')?.removeAttribute('open');
   }
-  setDefaultDates();
 
-  // Filtros reactivos: se recalcula al cambiar cualquier control
-  ['date-from', 'date-to', 'user-type'].forEach(id =>
-    document.getElementById(id).addEventListener('change', fetchData)
-  );
+  showLoading();
+  try {
+    const res = await fetch(DATA_FILE);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    ALL_RECORDS = await res.json();
+  } catch (error) {
+    console.error('[Stats] Error cargando JSON local:', error);
+    showEmpty('Error al cargar los datos locales. Revisa la consola del navegador (F12).');
+    return;
+  }
 
-  fetchData();
-});
+  if (!Array.isArray(ALL_RECORDS) || !ALL_RECORDS.length) {
+    showEmpty('No hay registros disponibles para mostrar.');
+    return;
+  }
+
+  console.log(`[Stats] Registros cargados: ${ALL_RECORDS.length}`);
+  setupTimeline();
+  wireTimelineEvents();
+  renderFiltered();
+}
+
+document.addEventListener('DOMContentLoaded', initDashboard);
