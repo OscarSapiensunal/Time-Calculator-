@@ -134,6 +134,7 @@ header {
   z-index: 100;
   background: rgba(232,236,255,.85);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(39,84,108,.08);
   padding: .8rem 0;
 }
@@ -1542,56 +1543,84 @@ footer {
   background: #a52f2f !important;
 }
 
-.why-hours-tip summary {
-  font-size: .75rem;
-  color: var(--color-text-muted, #6c8592);
-  cursor: pointer;
-  user-select: none;
-  list-style: none;
-}
-.why-hours-tip summary::-webkit-details-marker { display: none; }
-.why-hours-tip[open] span {
-  display: block;
-  font-size: .75rem;
-  color: var(--color-text-muted, #6c8592);
-  margin-top: .25rem;
-  max-width: 320px;
-  line-height: 1.4;
-}
-
-/* Sliders en 2 columnas dentro de cada bloque */
+/* ============================================================
+   SLIDERS-AREA — grilla responsiva de 3 niveles
+   - Móvil vertical (<600px): columna única ("larguero") en
+     ambos bloques. Es la base por defecto, sin media query.
+   - Tablet/móvil horizontal (600–899px) y Desktop (≥900px):
+     · Bloque DIARIO (.group--estructural): 1 columna compacta y
+       simétrica — los campos diarios son cortos y no necesitan
+       pareja lateral. Nunca se sobrescribe: hereda la base.
+     · Bloque SEMANAL (.group--academica): las variables largas/
+       complejas (.col-full: nota, toggle de estudiante, bloque
+       académico, "lo que te apasiona") ocupan las dos columnas;
+       las parejas cortas (transporte/hogar, trabajo/otras
+       obligaciones, deporte/social) se agrupan en ".field-pair"
+       —un mini-grid propio— para que cada una controle su
+       propio divisor sin depender del orden de sus vecinos.
+   Los breakpoints (600px / 900px) reutilizan los mismos puntos
+   de quiebre que .calc-grid para mantener consistencia.
+============================================================ */
 .sliders-area {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  column-gap: 2.5rem;
+  grid-template-columns: 1fr;
   row-gap: 0;
-  position: relative;
 }
 
-/* Línea divisoria fantasma entre columnas */
-.sliders-area::before {
-  content: '';
-  position: absolute;
-  left: calc(50% - 1px);
-  top: 0.75rem;
-  bottom: 0.75rem;
-  width: 1px;
-  background: rgba(39, 84, 108, 0.09);
-  pointer-events: none;
-}
-
-/* Elementos que ocupan las dos columnas */
+/* Elementos que ocupan las dos columnas (no-op en columna única) */
 .sliders-area .col-full {
   grid-column: 1 / -1;
 }
 
-/* En móvil, todo en una columna */
-@media (max-width: 640px) {
-  .sliders-area {
-    grid-template-columns: 1fr;
+/* Pareja de campos cortos dentro del bloque semanal: por
+   defecto (móvil) es un mini-grid de 1 columna, así sus dos
+   .field quedan apilados igual que el resto del "larguero". */
+.field-pair {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin-bottom: 1.4rem;
+}
+.field-pair:last-child { margin-bottom: 0; }
+
+@media (min-width: 600px) {
+  .group--academica .sliders-area {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 2.5rem;
   }
-  .sliders-area::before {
-    display: none;
+
+  /* La pareja se abre en 2 columnas propias, con su divisor
+     anclado al primer campo: su alto es el de la pareja misma,
+     por lo que jamás se extiende sobre un .col-full vecino ni
+     se desalinea, sin importar qué venga antes o después. */
+  .group--academica .sliders-area .field-pair {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 2.5rem;
+  }
+  .group--academica .sliders-area .field-pair .field:first-child {
+    position: relative;
+  }
+  .group--academica .sliders-area .field-pair .field:first-child::after {
+    content: '';
+    position: absolute;
+    top: .15rem;
+    bottom: .15rem;
+    right: -1.25rem; /* centrado en el column-gap de 2.5rem */
+    width: 1px;
+    background: rgba(39, 84, 108, 0.09);
+    pointer-events: none;
+  }
+}
+
+@media (min-width: 900px) {
+  /* Desktop: el bloque semanal se expande de forma dinámica y
+     equilibrada — columnas iguales que crecen con el contenedor
+     (1fr 1.5fr de .calc-grid), con más aire entre ellas. */
+  .group--academica .sliders-area,
+  .group--academica .sliders-area .field-pair {
+    column-gap: 3rem;
+  }
+  .group--academica .sliders-area .field-pair .field:first-child::after {
+    right: -1.5rem; /* recentrado para el gap de 3rem */
   }
 }
 
@@ -1607,7 +1636,7 @@ footer {
   display: flex;
   align-items: flex-start;
   gap: .85rem;
-  max-width: 380px;
+  max-width: 400px;
   padding: 1rem 1.1rem;
   background: var(--color-white);
   border: 1px solid rgba(39, 84, 108, .10);
@@ -1643,6 +1672,32 @@ footer {
   font-size: .98rem;
   font-weight: 700;
   color: var(--color-principal);
+}
+
+/* Invitación a explorar el Informe 2026-1 — mismo lenguaje
+   visual (degradado coral → verde) que el hito de la Feria de
+   las Emociones en el timeline slider del dashboard. */
+.rapsi-toast-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  margin-top: .65rem;
+  padding: .45rem .9rem;
+  font-family: var(--font-body);
+  font-size: .8rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-acento-f), var(--c-social));
+  border-radius: 100px;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(255, 148, 145, .35);
+  transition: transform .15s, box-shadow .15s;
+}
+
+.rapsi-toast-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(91, 200, 175, .4);
 }
 
 .rapsi-toast-close {

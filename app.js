@@ -240,16 +240,67 @@ function calcular() {
   // --------------------------------------------------------
   // 9. CIERRE DE RECOLECCIÓN — aplicación 100% estática
   //    El periodo de captura del Informe 2026-1 finalizó: ya no
-  //    se escribe en ninguna base de datos externa. Se confirma
-  //    la interacción con un mensaje local elegante.
+  //    se escribe en ninguna base de datos externa. Antes de
+  //    avisarlo, guardamos un snapshot local de esta respuesta
+  //    (mismos nombres de campo que registros_bienestar_rows.json)
+  //    para poder simular su impacto en las estadísticas globales.
   // --------------------------------------------------------
+  saveLocalSnapshot({
+    is_student:                isStudent,
+    sleep_hours:               parseFloat(hSleep),
+    transport_hours:           parseFloat(hTransit),
+    food_hours:                parseFloat(hFood),
+    grooming_hours:            parseFloat(hGrooming),
+    house_tasks_hours:         parseFloat(hHouseTasks),
+    class_hours:               parseFloat(classHours),
+    self_study_hours:          parseFloat(selfStudyHours),
+    academic_load_hours:       parseFloat(hStudy),
+    work_hours:                parseFloat(hWork),
+    obligations_hours:         parseFloat(hOther),
+    scrolling_hours:           parseFloat(hScreen),
+    physical_activity_hours:   parseFloat(hPhysical),
+    quality_social_hours:      parseFloat(hSocial),
+    other_hobbies_hours:       parseFloat(hHobby),
+    available_time:            parseFloat(tLibreNeto),
+    wellbeing_time:            parseFloat(tBienestar),
+    occupied_time:             parseFloat(tOcupado),
+  });
+
   showLocalSubmissionMessage();
 }
 
 /* ----------------------------------------------------------
+   PERSISTENCIA LOCAL: snapshot anónimo en localStorage
+   Reutiliza los mismos nombres de campo que el JSON estático
+   del dashboard (registros_bienestar_rows.json), de modo que
+   este snapshot pueda mezclarse ahí para simular un impacto
+   real en las estadísticas globales del Informe 2026-1.
+---------------------------------------------------------- */
+const LOCAL_SNAPSHOT_KEY = 'rapsi_user_snapshot';
+
+function saveLocalSnapshot(fields) {
+  try {
+    const snapshot = {
+      id:               (window.crypto?.randomUUID?.() ?? `local-${Date.now()}`),
+      usuario_id:       null,
+      anonymous_mode:   true,
+      consent_accepted: true,
+      created_at:       new Date().toISOString(),
+      ...fields,
+    };
+    localStorage.setItem(LOCAL_SNAPSHOT_KEY, JSON.stringify(snapshot));
+    console.log(`[RAPsi] Snapshot local guardado en localStorage['${LOCAL_SNAPSHOT_KEY}'].`);
+  } catch (err) {
+    // localStorage puede no estar disponible (modo privado, cuota llena, etc.)
+    console.error('[RAPsi] No se pudo guardar el snapshot local:', err.message);
+  }
+}
+
+/* ----------------------------------------------------------
    CIERRE DE RECOLECCIÓN: confirmación local (sin backend)
-   Muestra un aviso flotante elegante y autodescartable. No
-   realiza ninguna conexión de red ni persiste datos.
+   Muestra un aviso flotante elegante con una invitación directa
+   a explorar el Informe 2026-1. Autodescartable, pero pausa el
+   cierre automático mientras el usuario interactúa con él.
 ---------------------------------------------------------- */
 function showLocalSubmissionMessage() {
   // Evita duplicados si se recalcula varias veces seguidas
@@ -263,25 +314,33 @@ function showLocalSubmissionMessage() {
   toast.innerHTML = `
     <div class="rapsi-toast-icon">✅</div>
     <div class="rapsi-toast-text">
-      <strong>¡Gracias por interactuar con RAPsi!</strong>
-      El periodo de recolección de datos del Informe 2026-1 ha finalizado con éxito.
+      <strong>El periodo de respuestas oficiales ya ha culminado para el Informe 2026-1.</strong>
+      Sin embargo, hemos calculado tus métricas con éxito.
+      <a href="/stats/" class="rapsi-toast-cta">🎪 Explorar el Informe 2026-1 ⟶</a>
     </div>
     <button class="rapsi-toast-close" aria-label="Cerrar aviso">&times;</button>`;
 
   document.body.appendChild(toast);
 
+  let dismissTimer;
   const dismiss = () => {
     toast.classList.add('rapsi-toast--out');
     toast.addEventListener('transitionend', () => toast.remove(), { once: true });
   };
+  const scheduleDismiss = () => { dismissTimer = setTimeout(dismiss, 9000); };
 
   toast.querySelector('.rapsi-toast-close').addEventListener('click', dismiss);
+  // Pausa el autodescartado si el usuario está leyendo o va a hacer clic en la CTA
+  toast.addEventListener('mouseenter', () => clearTimeout(dismissTimer));
+  toast.addEventListener('mouseleave', scheduleDismiss);
 
-  // Animación de entrada en el siguiente frame y autodescartado
-  requestAnimationFrame(() => toast.classList.add('rapsi-toast--in'));
-  setTimeout(dismiss, 6000);
+  // Animación de entrada (setTimeout en vez de requestAnimationFrame:
+  // así dispara igual aunque la pestaña esté en segundo plano) y
+  // autodescartado.
+  setTimeout(() => toast.classList.add('rapsi-toast--in'), 10);
+  scheduleDismiss();
 
-  console.log('[RAPsi] Recolección cerrada — interacción confirmada localmente.');
+  console.log('[RAPsi] Recolección cerrada — interacción confirmada y snapshot local guardado.');
 }
 
 /* ----------------------------------------------------------
