@@ -33,7 +33,7 @@
         </a>
         <ul class="nav-links">
           <li><a href="../index.html">Calculadora</a></li>
-          <li><a href="#" class="nav-active">Estadísticas</a></li>
+          <li><a href="#" class="nav-active">Informe 2026-1</a></li>
         </ul>
         <details class="nav-mobile">
           <summary aria-label="Abrir menú">
@@ -43,7 +43,7 @@
           </summary>
           <ul class="nav-mobile-list">
             <li><a href="../index.html">Calculadora</a></li>
-            <li><a href="#" class="nav-active">Estadísticas</a></li>
+            <li><a href="#" class="nav-active">Informe 2026-1</a></li>
           </ul>
         </details>
       </nav>
@@ -53,8 +53,8 @@
   <!-- HERO DEL DASHBOARD -->
   <section class="dash-hero">
     <div class="container">
-      <span class="tag">Estadísticas · Datos anónimos</span>
-      <h1 class="section-title" style="margin-top:.75rem">Dashboard de Estadísticas</h1>
+      <span class="tag">Informe 2026-1 · Datos anónimos</span>
+      <h1 class="section-title" style="margin-top:.75rem">Dashboard de Informe 2026-1</h1>
       <p class="section-sub">
         Mira las estadísticas de las personas que han
         llenado la calculadora de bienestar. Todos los valores son
@@ -72,14 +72,34 @@
           <span class="filters-chevron">▼</span>
         </summary>
         <div class="filters-bar">
-          <div class="filter-group">
-            <label for="date-from">Desde</label>
-            <input type="date" id="date-from" class="date-input" />
+          <div class="filter-group filter-group--timeline">
+            <label>Línea de tiempo · Informe 2026-1</label>
+            <div class="timeline-readout">
+              <span class="tl-pill">Desde <strong id="tl-from-label">—</strong></span>
+              <span class="tl-pill">Hasta <strong id="tl-to-label">—</strong></span>
+            </div>
+            <div class="timeline" id="timeline">
+              <div class="timeline-rail"></div>
+              <div class="timeline-fill" id="tl-fill"></div>
+
+              <div class="tl-bubble" id="tl-bubble-from"></div>
+              <div class="tl-bubble" id="tl-bubble-to"></div>
+
+              <button type="button" class="timeline-milestone" id="tl-milestone"
+                      style="left:33.333%"
+                      title="Jueves 21 de mayo · Feria de las Emociones — clic para enfocar ese día"
+                      aria-label="Hito: jueves 21 de mayo, Feria de las Emociones. Clic para filtrar ese día.">
+                <span class="tl-milestone-dot"></span>
+                <span class="tl-milestone-stem"></span>
+                <span class="tl-milestone-flag">🎪 21 May · Feria de las Emociones</span>
+              </button>
+
+              <!-- min/max/value se configuran dinámicamente en stats.js (setupTimeline) -->
+              <input type="range" id="range-from" class="tl-range" min="0" max="1" step="1" value="0" aria-label="Fecha de inicio" />
+              <input type="range" id="range-to"   class="tl-range" min="0" max="1" step="1" value="1" aria-label="Fecha de fin" />
+            </div>
           </div>
-          <div class="filter-group">
-            <label for="date-to">Hasta</label>
-            <input type="date" id="date-to" class="date-input" />
-          </div>
+
           <div class="filter-group">
             <label for="user-type">Tipo de usuario</label>
             <select id="user-type" class="select-input">
@@ -88,6 +108,7 @@
               <option value="nonstudent">No Estudiantes</option>
             </select>
           </div>
+
           <button class="btn-apply" onclick="applyFilters()">Aplicar filtros</button>
         </div>
       </details>
@@ -179,6 +200,43 @@
     </div>
   </section>
 
+  <!-- CRÉDITOS DEL PROYECTO -->
+  <section class="credits-section" id="credits-section">
+    <div class="container">
+      <div class="credits-header">
+        <span class="tag">RAPsi · UNAL</span>
+        <h2 class="section-title" style="margin-top:.75rem">Créditos del Proyecto</h2>
+        <p class="section-sub">Equipo que diseñó y desarrolló este dashboard de bienestar.</p>
+      </div>
+      <div class="credits-grid">
+        <div class="credit-card">
+          <div class="credit-photo"><img src="../Imagenes/Aleja.png" alt="Foto de Aleja" loading="lazy" /></div>
+          <span class="credit-name">[Nombre Integrante 1]</span>
+        </div>
+        <div class="credit-card">
+          <div class="credit-photo"><img src="../Imagenes/Carolina.png" alt="Foto de Carolina" loading="lazy" /></div>
+          <span class="credit-name">[Nombre Integrante 2]</span>
+        </div>
+        <div class="credit-card">
+          <div class="credit-photo"><img src="../Imagenes/Diego.png" alt="Foto de Diego" loading="lazy" /></div>
+          <span class="credit-name">[Nombre Integrante 3]</span>
+        </div>
+        <div class="credit-card">
+          <div class="credit-photo"><img src="../Imagenes/Gisel.png" alt="Foto de Gisel" loading="lazy" /></div>
+          <span class="credit-name">[Nombre Integrante 4]</span>
+        </div>
+        <div class="credit-card">
+          <div class="credit-photo"><img src="../Imagenes/Oscar.png" alt="Foto de Oscar" loading="lazy" /></div>
+          <span class="credit-name">[Nombre Integrante 5]</span>
+        </div>
+        <div class="credit-card">
+          <div class="credit-photo"><img src="../Imagenes/Wendy.png" alt="Foto de Wendy" loading="lazy" /></div>
+          <span class="credit-name">[Nombre Integrante 6]</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- FOOTER INSTITUCIONAL -->
   <footer>
     <div class="container">
@@ -214,9 +272,7 @@
     </div>
   </footer>
 
-  <!-- SDK de Supabase UMD -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <!-- Lógica del dashboard -->
+  <!-- Lógica del dashboard (incluye el control del Timeline Slider) -->
   <script src="stats.js"></script>
 
 </body>

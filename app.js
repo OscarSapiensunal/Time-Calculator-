@@ -13,18 +13,6 @@ const CONFIG = {
 };
 
 /* ----------------------------------------------------------
-   SUPABASE — conexión al backend
-   Completa las cadenas con los valores de tu proyecto Supabase.
----------------------------------------------------------- */
-const SUPABASE_URL      = "https://gczrxdubzzuiuxuxvxsm.supabase.co";
-// La anon key es pública por diseño en aplicaciones del lado del cliente (Vercel);
-// la seguridad de los datos está garantizada por las políticas RLS de Supabase.
-const SUPABASE_ANON_KEY = "sb_publishable_yJ_cSM-COnRQfZG7US5c8g_26o8SYS1";
-// window.supabaseClient evita conflicto de nombre con window.supabase (objeto del CDN)
-// y elimina cualquier posible SyntaxError por redeclaración de 'const supabase'
-window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-/* ----------------------------------------------------------
    HELPER: sincronizar slider con su etiqueta de valor
    Se llama mediante oninput="syncRange('id')" en el HTML
 ---------------------------------------------------------- */
@@ -250,47 +238,50 @@ function calcular() {
   }, 150);
 
   // --------------------------------------------------------
-  // 9. GUARDAR EN SUPABASE (fire-and-forget, no bloquea la UI)
+  // 9. CIERRE DE RECOLECCIÓN — aplicación 100% estática
+  //    El periodo de captura del Informe 2026-1 finalizó: ya no
+  //    se escribe en ninguna base de datos externa. Se confirma
+  //    la interacción con un mensaje local elegante.
   // --------------------------------------------------------
-  saveToSupabase({
-    usuario_id:               null,
-    consent_accepted:         true,
-    is_student:               isStudent,
-    sleep_hours:              parseFloat(hSleep),
-    transport_hours:          parseFloat(hTransit),
-    food_hours:               parseFloat(hFood),
-    grooming_hours:           parseFloat(hGrooming),
-    house_tasks_hours:        parseFloat(hHouseTasks),
-    class_hours:              parseFloat(classHours),
-    self_study_hours:         parseFloat(selfStudyHours),
-    academic_load_hours:      parseFloat(hStudy),
-    work_hours:               parseFloat(hWork),
-    obligations_hours:        parseFloat(hOther),
-    scrolling_hours:          parseFloat(hScreen),
-    physical_activity_hours:  parseFloat(hPhysical),
-    quality_social_hours:     parseFloat(hSocial),
-    other_hobbies_hours:      parseFloat(hHobby),
-    available_time:           parseFloat(tLibreNeto),
-    wellbeing_time:           parseFloat(tBienestar),
-    occupied_time:            parseFloat(tOcupado),
-  });
+  showLocalSubmissionMessage();
 }
 
 /* ----------------------------------------------------------
-   SUPABASE: guardar registro anónimo en registros_bienestar
-   usuario_id es null literal para evitar errores de tipo UUID.
+   CIERRE DE RECOLECCIÓN: confirmación local (sin backend)
+   Muestra un aviso flotante elegante y autodescartable. No
+   realiza ninguna conexión de red ni persiste datos.
 ---------------------------------------------------------- */
-async function saveToSupabase(data) {
-  try {
-    const { error } = await window.supabaseClient
-      .from('registros_bienestar')
-      .insert([data]);
+function showLocalSubmissionMessage() {
+  // Evita duplicados si se recalcula varias veces seguidas
+  document.getElementById('rapsi-toast')?.remove();
 
-    if (error) throw error;
-    console.log('[RAPsi] Registro de bienestar guardado correctamente.');
-  } catch (err) {
-    console.error('[RAPsi] Error al guardar registro:', err.message);
-  }
+  const toast = document.createElement('div');
+  toast.id = 'rapsi-toast';
+  toast.className = 'rapsi-toast';
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+  toast.innerHTML = `
+    <div class="rapsi-toast-icon">✅</div>
+    <div class="rapsi-toast-text">
+      <strong>¡Gracias por interactuar con RAPsi!</strong>
+      El periodo de recolección de datos del Informe 2026-1 ha finalizado con éxito.
+    </div>
+    <button class="rapsi-toast-close" aria-label="Cerrar aviso">&times;</button>`;
+
+  document.body.appendChild(toast);
+
+  const dismiss = () => {
+    toast.classList.add('rapsi-toast--out');
+    toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+  };
+
+  toast.querySelector('.rapsi-toast-close').addEventListener('click', dismiss);
+
+  // Animación de entrada en el siguiente frame y autodescartado
+  requestAnimationFrame(() => toast.classList.add('rapsi-toast--in'));
+  setTimeout(dismiss, 6000);
+
+  console.log('[RAPsi] Recolección cerrada — interacción confirmada localmente.');
 }
 
 /* ----------------------------------------------------------

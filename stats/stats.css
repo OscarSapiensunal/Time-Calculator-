@@ -66,7 +66,6 @@
   color: var(--color-text-muted);
 }
 
-.date-input,
 .select-input {
   font-family: var(--font-body);
   font-size: .9rem;
@@ -81,61 +80,211 @@
   height: 40px;
 }
 
-/* Fuerza paleta de colores claros en el selector nativo del navegador */
-input[type="date"].date-input,
-input[type="time"].date-input {
-  color-scheme: light;
-}
-
-.date-input:focus,
 .select-input:focus {
   border-color: var(--color-principal);
   box-shadow: 0 0 0 3px rgba(39, 84, 108, 0.1);
 }
 
 /* ============================================================
-   FILTROS — Endurecimiento del aspecto nativo de date/time
-   Anula los componentes internos del navegador para que la
-   tipografía y los iconos respeten la línea institucional.
+   FILTRO DE FECHAS — TIMELINE SLIDER (rango deslizable)
+   Reemplaza los <input type="date"> por un riel interactivo
+   de doble manija, con etiquetas de fecha, indicadores
+   flotantes e hito destacado (Feria de las Emociones).
 ============================================================ */
-/* Chrome / Edge / Safari ----------------------------------- */
-input[type="date"].date-input::-webkit-datetime-edit,
-input[type="time"].date-input::-webkit-datetime-edit {
-  font-family: var(--font-body);
-  color: var(--color-text);
-  padding: 0;
+.filter-group--timeline {
+  flex: 1 1 100%;
+  min-width: 0;
+  gap: .85rem;
 }
-input[type="date"].date-input::-webkit-datetime-edit-fields-wrapper,
-input[type="time"].date-input::-webkit-datetime-edit-fields-wrapper {
-  padding: 0;
+
+/* Lectura clara del rango seleccionado (inicio / fin) */
+.timeline-readout {
+  display: flex;
+  justify-content: space-between;
+  gap: .5rem;
+  flex-wrap: wrap;
 }
-input[type="date"].date-input::-webkit-inner-spin-button,
-input[type="time"].date-input::-webkit-inner-spin-button,
-input[type="date"].date-input::-webkit-clear-button,
-input[type="time"].date-input::-webkit-clear-button {
-  display: none;
-  -webkit-appearance: none;
-}
-input[type="date"].date-input::-webkit-calendar-picker-indicator {
-  opacity: .55;
-  cursor: pointer;
-  filter: invert(28%) sepia(20%) saturate(800%) hue-rotate(165deg);
-  transition: opacity .2s;
-}
-input[type="date"].date-input:hover::-webkit-calendar-picker-indicator,
-input[type="time"].date-input::-webkit-calendar-picker-indicator {
-  opacity: .85;
-}
-/* Firefox -------------------------------------------------- */
-input[type="date"].date-input,
-input[type="time"].date-input {
-  -moz-appearance: none;
-  appearance: none;
-}
-/* Placeholder cuando el input está vacío en algunos navegadores */
-input[type="date"].date-input:invalid,
-input[type="time"].date-input:invalid {
+
+.tl-pill {
+  font-size: .78rem;
+  font-weight: 500;
   color: var(--color-text-muted);
+  background: rgba(39, 84, 108, .05);
+  border: 1px solid rgba(39, 84, 108, .08);
+  padding: .3rem .75rem;
+  border-radius: 100px;
+}
+
+.tl-pill strong {
+  margin-left: .3rem;
+  font-weight: 700;
+  color: var(--color-principal);
+}
+
+/* Contenedor del riel ------------------------------------- */
+.timeline {
+  position: relative;
+  height: 86px;
+}
+
+.timeline-rail,
+.timeline-fill {
+  position: absolute;
+  top: 40px;
+  height: 6px;
+  border-radius: 100px;
+  pointer-events: none;
+}
+
+.timeline-rail {
+  left: 0;
+  right: 0;
+  background: rgba(39, 84, 108, .12);
+}
+
+.timeline-fill {
+  left: 0;
+  width: 100%;
+  background: linear-gradient(90deg, var(--color-principal), var(--c-social));
+}
+
+/* Doble manija: dos range superpuestos -------------------- */
+.tl-range {
+  position: absolute;
+  top: 31px;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 24px;
+  margin: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: none;   /* el riel deja pasar el clic */
+}
+.tl-range#range-from { z-index: 3; }
+.tl-range#range-to   { z-index: 4; }
+
+.tl-range::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 24px;
+}
+.tl-range::-moz-range-track {
+  background: transparent;
+  height: 24px;
+}
+
+.tl-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;   /* sólo la manija es interactiva */
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-white);
+  border: 3px solid var(--color-principal);
+  box-shadow: 0 2px 6px rgba(39, 84, 108, .28);
+  cursor: grab;
+  transition: transform .15s, box-shadow .15s;
+}
+.tl-range::-moz-range-thumb {
+  pointer-events: auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-white);
+  border: 3px solid var(--color-principal);
+  box-shadow: 0 2px 6px rgba(39, 84, 108, .28);
+  cursor: grab;
+  transition: transform .15s, box-shadow .15s;
+}
+.tl-range::-webkit-slider-thumb:active { transform: scale(1.15); cursor: grabbing; box-shadow: 0 0 0 6px rgba(39, 84, 108, .12); }
+.tl-range::-moz-range-thumb:active     { transform: scale(1.15); cursor: grabbing; box-shadow: 0 0 0 6px rgba(39, 84, 108, .12); }
+
+/* Indicador flotante interactivo sobre cada manija -------- */
+.tl-bubble {
+  position: absolute;
+  top: 2px;
+  transform: translateX(-50%);
+  background: var(--color-principal);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: .22rem .5rem;
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .2s;
+  z-index: 6;
+}
+.tl-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: var(--color-principal);
+}
+.timeline:hover .tl-bubble,
+.timeline:focus-within .tl-bubble { opacity: 1; }
+
+/* Hito destacado: Feria de las Emociones ------------------ */
+.timeline-milestone {
+  position: absolute;
+  top: 40px;
+  transform: translate(-50%, -7px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  z-index: 5;
+}
+
+.tl-milestone-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-acento-f);
+  border: 3px solid var(--color-white);
+  box-shadow: 0 0 0 2px var(--color-acento-f), 0 2px 8px rgba(255, 148, 145, .55);
+  transition: transform .15s;
+}
+
+.tl-milestone-stem {
+  width: 2px;
+  height: 7px;
+  background: var(--color-acento-f);
+}
+
+.tl-milestone-flag {
+  margin-top: 2px;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-acento-f), var(--c-social));
+  padding: .3rem .65rem;
+  border-radius: 100px;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(255, 148, 145, .35);
+  transition: transform .15s, box-shadow .15s;
+}
+
+.timeline-milestone:hover .tl-milestone-dot   { transform: scale(1.18); }
+.timeline-milestone:hover .tl-milestone-flag,
+.timeline-milestone:focus-visible .tl-milestone-flag {
+  transform: translateY(1px);
+  box-shadow: 0 5px 16px rgba(91, 200, 175, .45);
+}
+
+@media (max-width: 480px) {
+  .tl-milestone-flag { font-size: .6rem; padding: .26rem .5rem; }
+  .tl-pill           { font-size: .72rem; }
 }
 
 .select-input {
@@ -436,6 +585,71 @@ input[type="time"].date-input:invalid {
   font-weight: 500;
   white-space: nowrap;
   font-size: .76rem;
+}
+
+/* ============================================================
+   CRÉDITOS DEL PROYECTO
+============================================================ */
+.credits-section {
+  padding: 2.5rem 0 4rem;
+  border-top: 1px solid rgba(39, 84, 108, .08);
+}
+
+.credits-header { margin-bottom: 1.75rem; }
+
+.credits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1.5rem;
+}
+
+.credit-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .85rem;
+  background: var(--color-white);
+  border: 1px solid rgba(39, 84, 108, .09);
+  border-radius: var(--radius);
+  padding: 1.75rem 1rem 1.4rem;
+  box-shadow: var(--shadow);
+  text-align: center;
+  transition: box-shadow .2s, transform .2s;
+}
+
+.credit-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+}
+
+.credit-photo {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--color-acento-s);
+  border: 3px solid var(--color-acento-s);
+  box-shadow: 0 0 0 3px rgba(39, 84, 108, .06);
+}
+
+.credit-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.credit-name {
+  font-family: var(--font-body);
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--color-principal);
+  line-height: 1.3;
+}
+
+@media (max-width: 600px) {
+  .credits-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ============================================================

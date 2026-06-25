@@ -1594,3 +1594,82 @@ footer {
     display: none;
   }
 }
+
+/* ============================================================
+   TOAST DE CONFIRMACIÓN LOCAL — cierre de recolección
+   Aviso flotante autodescartable, sin backend. Paleta RAPsi.
+============================================================ */
+.rapsi-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  align-items: flex-start;
+  gap: .85rem;
+  max-width: 380px;
+  padding: 1rem 1.1rem;
+  background: var(--color-white);
+  border: 1px solid rgba(39, 84, 108, .10);
+  border-left: 4px solid var(--color-principal);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-body);
+  /* Estado inicial (fuera de pantalla) */
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .35s ease, transform .35s cubic-bezier(.21, 1.02, .73, 1);
+}
+
+.rapsi-toast--in  { opacity: 1; transform: translateY(0); }
+.rapsi-toast--out { opacity: 0; transform: translateY(16px); }
+
+.rapsi-toast-icon {
+  font-size: 1.35rem;
+  line-height: 1.3;
+  flex-shrink: 0;
+}
+
+.rapsi-toast-text {
+  font-size: .85rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.rapsi-toast-text strong {
+  display: block;
+  margin-bottom: .15rem;
+  font-family: var(--font-display);
+  font-size: .98rem;
+  font-weight: 700;
+  color: var(--color-principal);
+}
+
+.rapsi-toast-close {
+  flex-shrink: 0;
+  margin: -.25rem -.25rem 0 0;
+  padding: 0 .25rem;
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color .2s;
+}
+
+.rapsi-toast-close:hover { color: var(--color-acento-f); }
+
+@media (max-width: 480px) {
+  .rapsi-toast {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rapsi-toast { transition: opacity .2s ease; transform: none; }
+  .rapsi-toast--in, .rapsi-toast--out { transform: none; }
+}
