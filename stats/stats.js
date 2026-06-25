@@ -410,6 +410,59 @@ function renderDoughnutLegend(data, total) {
 const DATA_FILE = 'registros_bienestar_rows.json';
 
 /* ----------------------------------------------------------
+   "COMUNIDAD + TÚ" — snapshot local del usuario
+   app.js guarda en localStorage la última respuesta calculada
+   en la calculadora (mismos nombres de campo que el JSON). Si
+   existe y es válida, se incorpora como un registro más al
+   arreglo en memoria para que el usuario vea su propio dato
+   reflejado en los promedios y gráficas del Informe 2026-1.
+---------------------------------------------------------- */
+const LOCAL_SNAPSHOT_KEY = 'rapsi_user_snapshot';
+
+function loadLocalSnapshot() {
+  try {
+    const raw = localStorage.getItem(LOCAL_SNAPSHOT_KEY);
+    if (!raw) return null;
+
+    const snap = JSON.parse(raw);
+    if (!snap || typeof snap !== 'object') return null;
+
+    // Validación mínima: debe tener una fecha parseable y al
+    // menos una métrica numérica real (sleep_hours), si no, se
+    // ignora silenciosamente en vez de romper el dashboard.
+    const ts = new Date(snap.created_at).getTime();
+    if (Number.isNaN(ts) || Number.isNaN(parseFloat(snap.sleep_hours))) {
+      console.warn('[Stats] Snapshot local con formato inesperado, se ignora.');
+      return null;
+    }
+
+    // Marca interna (no viaja al JSON ni se vuelve a guardar):
+    // permite saber si el snapshot quedó dentro del filtro activo.
+    snap.__isLocalSnapshot = true;
+    return snap;
+  } catch (err) {
+    console.warn('[Stats] No se pudo leer el snapshot local:', err.message);
+    return null;
+  }
+}
+
+/* ----------------------------------------------------------
+   TEXTO DINÁMICO "COMUNIDAD + TÚ"
+   Refleja si el snapshot local efectivamente cae dentro del
+   rango de fecha/tipo de usuario seleccionado en este momento
+   (no sólo si existe en localStorage), para que el mensaje sea
+   siempre exacto sobre lo que se está promediando.
+---------------------------------------------------------- */
+function updateSourceNote(includesLocal) {
+  const el = document.getElementById('kpi-source-note');
+  if (!el) return;
+  el.textContent = includesLocal
+    ? 'Análisis basado en las estadísticas de la comunidad + tu registro actual'
+    : 'Análisis basado en las estadísticas de la comunidad';
+  el.classList.toggle('kpi-source-note--mine', !!includesLocal);
+}
+
+/* ----------------------------------------------------------
    CONFIGURACIÓN DEL TIMELINE A PARTIR DE LOS DATOS
    Calcula el rango real [min, max] de created_at y ajusta los
    extremos del slider para que coincidan exactamente con los
@@ -499,6 +552,8 @@ function renderFiltered() {
 
   console.log(`[Stats] ${offsetToYMD(a)} → ${offsetToYMD(b)} · ${userType} · ${filtered.length} registros`);
 
+  updateSourceNote(filtered.some(r => r.__isLocalSnapshot));
+
   if (!filtered.length) {
     showEmpty('No se encontraron registros para los filtros seleccionados.');
     return;
@@ -574,6 +629,21 @@ function wireTimelineEvents() {
 }
 
 /* ----------------------------------------------------------
+   COORDINACIÓN DEL FILTRO STICKY CON EL HEADER
+   En vez de un "top" fijo adivinado por breakpoint (se
+   desalineaba: header real ≈ 62–64px, no 53/57px), medimos la
+   altura real del header y la exponemos como --header-h. Así
+   .filters-section (sticky) queda siempre pegada justo debajo,
+   sin huecos ni superposiciones, en cualquier ancho.
+---------------------------------------------------------- */
+function syncHeaderHeight() {
+  const header = document.querySelector('header');
+  if (!header) return;
+  const h = Math.ceil(header.getBoundingClientRect().height);
+  if (h > 0) document.documentElement.style.setProperty('--header-h', `${h}px`);
+}
+
+/* ----------------------------------------------------------
    PUNTO DE ENTRADA
    Carga única del JSON, configura el timeline desde los datos
    reales y pinta el estado inicial (rango completo).
@@ -581,6 +651,12 @@ function wireTimelineEvents() {
 function applyFilters() { renderFiltered(); }
 
 async function initDashboard() {
+  syncHeaderHeight();
+  window.addEventListener('resize', syncHeaderHeight);
+  // Las fuentes (Playfair/DM Sans) pueden cambiar la altura del
+  // header al terminar de cargar — se reajusta una vez más.
+  document.fonts?.ready?.then(syncHeaderHeight).catch(() => {});
+
   // Colapsar filtros por defecto en mobile
   if (window.innerWidth <= 600) {
     document.getElementById('filters-details')?.removeAttribute('open');
@@ -603,6 +679,13 @@ async function initDashboard() {
   }
 
   console.log(`[Stats] Registros cargados: ${ALL_RECORDS.length}`);
+
+  const localSnapshot = loadLocalSnapshot();
+  if (localSnapshot) {
+    ALL_RECORDS = [...ALL_RECORDS, localSnapshot];
+    console.log('[Stats] Snapshot local incorporado — Comunidad + Tú.');
+  }
+
   setupTimeline();
   wireTimelineEvents();
   renderFiltered();

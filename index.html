@@ -133,12 +133,6 @@
         <div class="hc-value"><span id="hc-used">0</span><span class="hc-of"> / 168 h</span></div>
         <div class="hc-bar-wrap"><div class="hc-bar" id="hc-bar"></div></div>
       </div>
-      <details class="why-hours-tip">
-        <summary>¿Por qué horas?</summary>
-        <span>Las 168 horas de la semana son el único recurso
-        verdaderamente igualitario. Registrarlo en horas permite
-        hacer ajustes concretos y comparar semana a semana.</span>
-      </details>
       <div class="hours-overflow" id="hours-overflow" hidden>
         <span class="hours-overflow-icon">⚠️</span>
         <div class="hours-overflow-body">
@@ -218,28 +212,30 @@
             <p><strong>¡Atención!</strong> Si realizas dos actividades al mismo tiempo (ej: usar el celular mientras te transportas, o escuchar un podcast mientras haces ejercicio), regístralo solo en una categoría. No cuentes la misma hora dos veces para que tu balance de 168 horas sea real.</p>
           </div>
 
-          <div class="field">
-            <div class="field-header">
-              <label for="transit_hours">Transporte</label>
-              <span class="time-chip time-chip--week">SEMANA</span>
+          <div class="field-pair col-full">
+            <div class="field">
+              <div class="field-header">
+                <label for="transit_hours">Transporte</label>
+                <span class="time-chip time-chip--week">SEMANA</span>
+              </div>
+              <div class="range-wrapper">
+                <input type="range" id="transit_hours" min="0" max="30" step="0.5" value="6" oninput="syncRange('transit_hours')" />
+                <span class="range-value" id="transit_hours-val">6 h</span>
+              </div>
+              <p class="hint">Suma todos tus trayectos de la semana (ida + vuelta)</p>
             </div>
-            <div class="range-wrapper">
-              <input type="range" id="transit_hours" min="0" max="30" step="0.5" value="6" oninput="syncRange('transit_hours')" />
-              <span class="range-value" id="transit_hours-val">6 h</span>
-            </div>
-            <p class="hint">Suma todos tus trayectos de la semana (ida + vuelta)</p>
-          </div>
 
-          <div class="field">
-            <div class="field-header">
-              <label for="house_tasks">Tareas del hogar</label>
-              <span class="time-chip time-chip--week">SEMANA</span>
+            <div class="field">
+              <div class="field-header">
+                <label for="house_tasks">Tareas del hogar</label>
+                <span class="time-chip time-chip--week">SEMANA</span>
+              </div>
+              <div class="range-wrapper">
+                <input type="range" id="house_tasks" min="0" max="20" step="0.5" value="4" oninput="syncRange('house_tasks')" />
+                <span class="range-value" id="house_tasks-val">4 h</span>
+              </div>
+              <p class="hint">Aseo, lavado, compras, organización</p>
             </div>
-            <div class="range-wrapper">
-              <input type="range" id="house_tasks" min="0" max="20" step="0.5" value="4" oninput="syncRange('house_tasks')" />
-              <span class="range-value" id="house_tasks-val">4 h</span>
-            </div>
-            <p class="hint">Aseo, lavado, compras, organización</p>
           </div>
 
           <div class="field col-full">
@@ -275,49 +271,53 @@
             </div>
           </div>
 
-          <div class="field" style="margin-top: 1.6rem;">
-            <div class="field-header">
-              <label for="work">Horas laborales</label>
-              <span class="time-chip time-chip--week">SEMANA</span>
+          <div class="field-pair col-full" style="margin-top: 1.6rem;">
+            <div class="field">
+              <div class="field-header">
+                <label for="work">Horas laborales</label>
+                <span class="time-chip time-chip--week">SEMANA</span>
+              </div>
+              <div class="range-wrapper">
+                <input type="range" id="work" min="0" max="60" step="1" value="0" oninput="syncRange('work')" />
+                <span class="range-value" id="work-val">0 h</span>
+              </div>
+              <p class="hint">Empleo formal, informal o prácticas remuneradas</p>
             </div>
-            <div class="range-wrapper">
-              <input type="range" id="work" min="0" max="60" step="1" value="0" oninput="syncRange('work')" />
-              <span class="range-value" id="work-val">0 h</span>
+
+            <div class="field">
+              <div class="field-header">
+                <label for="other">Otras obligaciones</label>
+                <span class="time-chip time-chip--week">SEMANA</span>
+              </div>
+              <input type="number" id="other" min="0" max="60" value="0" placeholder="Ej: 4 (tutorías, servicio social...)" oninput="updateCounter()" />
+              <p class="hint">Cuidado de personas, tutorías, voluntariado</p>
             </div>
-            <p class="hint">Empleo formal, informal o prácticas remuneradas</p>
           </div>
 
-          <div class="field" style="margin-top: 1.6rem;">
-            <div class="field-header">
-              <label for="other">Otras obligaciones</label>
-              <span class="time-chip time-chip--week">SEMANA</span>
+          <div class="field-pair col-full">
+            <div class="field">
+              <div class="field-header">
+                <label for="physical_activity">Deporte y movimiento</label>
+                <span class="time-chip time-chip--week">SEMANA</span>
+              </div>
+              <div class="range-wrapper">
+                <input type="range" id="physical_activity" min="0" max="20" step="0.5" value="2" oninput="syncRange('physical_activity')" />
+                <span class="range-value" id="physical_activity-val">2 h</span>
+              </div>
+              <p class="hint">Ejercicio, deporte, caminatas activas</p>
             </div>
-            <input type="number" id="other" min="0" max="60" value="0" placeholder="Ej: 4 (tutorías, servicio social...)" oninput="updateCounter()" />
-            <p class="hint">Cuidado de personas, tutorías, voluntariado</p>
-          </div>
 
-          <div class="field">
-            <div class="field-header">
-              <label for="physical_activity">Deporte y movimiento</label>
-              <span class="time-chip time-chip--week">SEMANA</span>
+            <div class="field">
+              <div class="field-header">
+                <label for="social_activity">Con los que quieres</label>
+                <span class="time-chip time-chip--week">SEMANA</span>
+              </div>
+              <div class="range-wrapper">
+                <input type="range" id="social_activity" min="0" max="20" step="0.5" value="3" oninput="syncRange('social_activity')" />
+                <span class="range-value" id="social_activity-val">3 h</span>
+              </div>
+              <p class="hint">Tiempo de calidad con amigos, pareja, familia</p>
             </div>
-            <div class="range-wrapper">
-              <input type="range" id="physical_activity" min="0" max="20" step="0.5" value="2" oninput="syncRange('physical_activity')" />
-              <span class="range-value" id="physical_activity-val">2 h</span>
-            </div>
-            <p class="hint">Ejercicio, deporte, caminatas activas</p>
-          </div>
-
-          <div class="field">
-            <div class="field-header">
-              <label for="social_activity">Con los que quieres</label>
-              <span class="time-chip time-chip--week">SEMANA</span>
-            </div>
-            <div class="range-wrapper">
-              <input type="range" id="social_activity" min="0" max="20" step="0.5" value="3" oninput="syncRange('social_activity')" />
-              <span class="range-value" id="social_activity-val">3 h</span>
-            </div>
-            <p class="hint">Tiempo de calidad con amigos, pareja, familia</p>
           </div>
 
           <div class="field col-full">
