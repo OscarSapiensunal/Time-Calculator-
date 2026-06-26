@@ -78,38 +78,41 @@
               <span class="tl-pill">Desde <strong id="tl-from-label">—</strong></span>
               <span class="tl-pill">Hasta <strong id="tl-to-label">—</strong></span>
             </div>
-            <div class="timeline" id="timeline">
-              <div class="timeline-rail"></div>
-              <div class="timeline-fill" id="tl-fill"></div>
 
-              <div class="tl-bubble" id="tl-bubble-from"></div>
-              <div class="tl-bubble" id="tl-bubble-to"></div>
+            <div class="timeline-controls">
+              <div class="filter-group filter-group--usertype">
+                <label for="user-type">Tipo de usuario</label>
+                <select id="user-type" class="select-input">
+                  <option value="all">Todos</option>
+                  <option value="student">Estudiantes</option>
+                  <option value="nonstudent">No Estudiantes</option>
+                </select>
+              </div>
 
-              <button type="button" class="timeline-milestone" id="tl-milestone"
-                      style="left:33.333%"
-                      title="Jueves 21 de mayo · Feria de las Emociones — clic para enfocar ese día"
-                      aria-label="Hito: jueves 21 de mayo, Feria de las Emociones. Clic para filtrar ese día.">
-                <span class="tl-milestone-dot"></span>
-                <span class="tl-milestone-stem"></span>
-                <span class="tl-milestone-flag">🎪 21 May<span class="tl-milestone-flag-detail"> · Feria de las Emociones</span></span>
-              </button>
+              <div class="timeline" id="timeline">
+                <div class="timeline-rail"></div>
+                <div class="timeline-fill" id="tl-fill"></div>
 
-              <!-- min/max/value se configuran dinámicamente en stats.js (setupTimeline) -->
-              <input type="range" id="range-from" class="tl-range" min="0" max="1" step="1" value="0" aria-label="Fecha de inicio" />
-              <input type="range" id="range-to"   class="tl-range" min="0" max="1" step="1" value="1" aria-label="Fecha de fin" />
+                <div class="tl-bubble" id="tl-bubble-from"></div>
+                <div class="tl-bubble" id="tl-bubble-to"></div>
+
+                <button type="button" class="timeline-milestone" id="tl-milestone"
+                        style="left:33.333%"
+                        title="Jueves 21 de mayo · Feria de las Emociones — clic para enfocar ese día"
+                        aria-label="Hito: jueves 21 de mayo, Feria de las Emociones. Clic para filtrar ese día.">
+                  <span class="tl-milestone-dot"></span>
+                  <span class="tl-milestone-stem"></span>
+                  <span class="tl-milestone-flag">🎪 21 May<span class="tl-milestone-flag-detail"> · Feria de las Emociones</span></span>
+                </button>
+
+                <!-- min/max/value se configuran dinámicamente en stats.js (setupTimeline) -->
+                <input type="range" id="range-from" class="tl-range" min="0" max="1" step="1" value="0" aria-label="Fecha de inicio" />
+                <input type="range" id="range-to"   class="tl-range" min="0" max="1" step="1" value="1" aria-label="Fecha de fin" />
+              </div>
+
+              <button class="btn-apply" onclick="applyFilters()">Aplicar filtros</button>
             </div>
           </div>
-
-          <div class="filter-group">
-            <label for="user-type">Tipo de usuario</label>
-            <select id="user-type" class="select-input">
-              <option value="all">Todos</option>
-              <option value="student">Estudiantes</option>
-              <option value="nonstudent">No Estudiantes</option>
-            </select>
-          </div>
-
-          <button class="btn-apply" onclick="applyFilters()">Aplicar filtros</button>
         </div>
       </details>
     </div>
@@ -246,6 +249,15 @@
           <span class="credit-role">Economía</span>
           <a class="credit-email" href="mailto:diramirezme@unal.edu.co">diramirezme@unal.edu.co</a>
         </div>
+      </div>
+
+      <!-- AGRADECIMIENTOS ESPECIALES -->
+      <div class="special-thanks">
+        <h3 class="special-thanks-title">Agradecimientos especiales</h3>
+        <p class="special-thanks-text">
+          A <strong>Fabián Andrés Meneses Morales</strong> (Líder de REDai),
+          por su acompañamiento a lo largo de este proyecto.
+        </p>
       </div>
     </div>
   </section>

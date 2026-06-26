@@ -276,7 +276,7 @@ function calcular() {
    este snapshot pueda mezclarse ahí para simular un impacto
    real en las estadísticas globales del Informe 2026-1.
 ---------------------------------------------------------- */
-const LOCAL_SNAPSHOT_KEY = 'rapsi_user_snapshot';
+const LOCAL_SNAPSHOT_KEY = 'rapsi_user_snapshots';
 
 function saveLocalSnapshot(fields) {
   try {
@@ -288,8 +288,18 @@ function saveLocalSnapshot(fields) {
       created_at:       new Date().toISOString(),
       ...fields,
     };
-    localStorage.setItem(LOCAL_SNAPSHOT_KEY, JSON.stringify(snapshot));
-    console.log(`[RAPsi] Snapshot local guardado en localStorage['${LOCAL_SNAPSHOT_KEY}'].`);
+
+    let snapshots = [];
+    const raw = localStorage.getItem(LOCAL_SNAPSHOT_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // Migra un snapshot antiguo (objeto único, formato pre-acumulativo) a array.
+      snapshots = Array.isArray(parsed) ? parsed : [parsed];
+    }
+
+    snapshots.push(snapshot);
+    localStorage.setItem(LOCAL_SNAPSHOT_KEY, JSON.stringify(snapshots));
+    console.log(`[RAPsi] Snapshot local acumulado en localStorage['${LOCAL_SNAPSHOT_KEY}'] (total: ${snapshots.length}).`);
   } catch (err) {
     // localStorage puede no estar disponible (modo privado, cuota llena, etc.)
     console.error('[RAPsi] No se pudo guardar el snapshot local:', err.message);
@@ -298,9 +308,10 @@ function saveLocalSnapshot(fields) {
 
 /* ----------------------------------------------------------
    CIERRE DE RECOLECCIÓN: confirmación local (sin backend)
-   Muestra un aviso flotante elegante con una invitación directa
-   a explorar el Informe 2026-1. Autodescartable, pero pausa el
-   cierre automático mientras el usuario interactúa con él.
+   Aviso flotante breve y discreto — no compite con los
+   resultados que la persona está a punto de ver. La invitación
+   al Informe 2026-1 vive de forma permanente y no invasiva en
+   el bloque de reflexión final (ver index.html).
 ---------------------------------------------------------- */
 function showLocalSubmissionMessage() {
   // Evita duplicados si se recalcula varias veces seguidas
@@ -312,11 +323,9 @@ function showLocalSubmissionMessage() {
   toast.setAttribute('role', 'status');
   toast.setAttribute('aria-live', 'polite');
   toast.innerHTML = `
-    <div class="rapsi-toast-icon">✅</div>
+    <div class="rapsi-toast-icon">✓</div>
     <div class="rapsi-toast-text">
-      <strong>El periodo de respuestas oficiales ya ha culminado para el Informe 2026-1.</strong>
-      Sin embargo, hemos calculado tus métricas con éxito.
-      <a href="/stats/" class="rapsi-toast-cta">🎪 Explorar el Informe 2026-1 ⟶</a>
+      Al final, puedes consultar tus respuestas, unidas junto con las estadísticas del 2026-1.
     </div>
     <button class="rapsi-toast-close" aria-label="Cerrar aviso">&times;</button>`;
 
@@ -330,7 +339,7 @@ function showLocalSubmissionMessage() {
   const scheduleDismiss = () => { dismissTimer = setTimeout(dismiss, 9000); };
 
   toast.querySelector('.rapsi-toast-close').addEventListener('click', dismiss);
-  // Pausa el autodescartado si el usuario está leyendo o va a hacer clic en la CTA
+  // Pausa el autodescartado mientras la persona está leyendo
   toast.addEventListener('mouseenter', () => clearTimeout(dismissTimer));
   toast.addEventListener('mouseleave', scheduleDismiss);
 
