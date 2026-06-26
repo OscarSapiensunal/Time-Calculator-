@@ -417,32 +417,37 @@ const DATA_FILE = 'registros_bienestar_rows.json';
    arreglo en memoria para que el usuario vea su propio dato
    reflejado en los promedios y gráficas del Informe 2026-1.
 ---------------------------------------------------------- */
-const LOCAL_SNAPSHOT_KEY = 'rapsi_user_snapshot';
+const LOCAL_SNAPSHOT_KEY = 'rapsi_user_snapshots';
 
-function loadLocalSnapshot() {
+function loadLocalSnapshots() {
   try {
     const raw = localStorage.getItem(LOCAL_SNAPSHOT_KEY);
-    if (!raw) return null;
+    if (!raw) return [];
 
-    const snap = JSON.parse(raw);
-    if (!snap || typeof snap !== 'object') return null;
+    const parsed = JSON.parse(raw);
+    // Migra un snapshot antiguo (objeto único, formato pre-acumulativo) a array.
+    const candidates = Array.isArray(parsed) ? parsed : [parsed];
 
-    // Validación mínima: debe tener una fecha parseable y al
-    // menos una métrica numérica real (sleep_hours), si no, se
+    // Validación mínima por registro: debe tener una fecha parseable
+    // y al menos una métrica numérica real (sleep_hours); si no, se
     // ignora silenciosamente en vez de romper el dashboard.
-    const ts = new Date(snap.created_at).getTime();
-    if (Number.isNaN(ts) || Number.isNaN(parseFloat(snap.sleep_hours))) {
-      console.warn('[Stats] Snapshot local con formato inesperado, se ignora.');
-      return null;
+    const snapshots = candidates.filter(snap => {
+      if (!snap || typeof snap !== 'object') return false;
+      const ts = new Date(snap.created_at).getTime();
+      return !Number.isNaN(ts) && !Number.isNaN(parseFloat(snap.sleep_hours));
+    });
+
+    if (snapshots.length !== candidates.length) {
+      console.warn('[Stats] Algún snapshot local con formato inesperado fue ignorado.');
     }
 
     // Marca interna (no viaja al JSON ni se vuelve a guardar):
-    // permite saber si el snapshot quedó dentro del filtro activo.
-    snap.__isLocalSnapshot = true;
-    return snap;
+    // permite saber qué registros quedaron dentro del filtro activo.
+    snapshots.forEach(snap => { snap.__isLocalSnapshot = true; });
+    return snapshots;
   } catch (err) {
-    console.warn('[Stats] No se pudo leer el snapshot local:', err.message);
-    return null;
+    console.warn('[Stats] No se pudieron leer los snapshots locales:', err.message);
+    return [];
   }
 }
 
@@ -680,10 +685,10 @@ async function initDashboard() {
 
   console.log(`[Stats] Registros cargados: ${ALL_RECORDS.length}`);
 
-  const localSnapshot = loadLocalSnapshot();
-  if (localSnapshot) {
-    ALL_RECORDS = [...ALL_RECORDS, localSnapshot];
-    console.log('[Stats] Snapshot local incorporado — Comunidad + Tú.');
+  const localSnapshots = loadLocalSnapshots();
+  if (localSnapshots.length) {
+    ALL_RECORDS = [...ALL_RECORDS, ...localSnapshots];
+    console.log(`[Stats] ${localSnapshots.length} snapshot(s) local(es) incorporado(s) — Comunidad + Tú.`);
   }
 
   setupTimeline();

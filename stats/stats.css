@@ -115,7 +115,21 @@
 .filter-group--timeline {
   flex: 1 1 100%;
   min-width: 0;
-  gap: .85rem;
+  gap: .6rem;
+}
+
+/* Fila unificada: tipo de usuario + riel del slider + botón,
+   todos en la misma línea horizontal para reducir el grosor
+   vertical de la barra de filtros sticky. */
+.timeline-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.filter-group--usertype {
+  flex: 0 0 auto;
+  width: 168px;
 }
 
 /* Lectura clara del rango seleccionado (inicio / fin) */
@@ -148,6 +162,8 @@
 /* Contenedor del riel ------------------------------------- */
 .timeline {
   position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
   height: 86px;
 }
 
@@ -172,8 +188,14 @@
   background: linear-gradient(90deg, var(--color-principal), var(--c-social));
 }
 
-/* Doble manija: dos range superpuestos -------------------- */
-.tl-range {
+/* Doble manija: dos range superpuestos --------------------
+   Especificidad reforzada con el id #timeline: la hoja base
+   (../styles.css) define una regla genérica input[type="range"]
+   (mayor especificidad que una sola clase) que, sin este
+   refuerzo, pisa el height/background de .tl-range y hace que
+   cada manija pinte su propio track sólido — el origen real de
+   la impresión de "dos líneas" separadas. */
+#timeline .tl-range {
   position: absolute;
   top: 31px;
   left: 0;
@@ -183,22 +205,34 @@
   margin: 0;
   background: transparent;
   -webkit-appearance: none;
+  -moz-appearance: none;
   appearance: none;
+  outline: none;
   pointer-events: none;   /* el riel deja pasar el clic */
 }
-.tl-range#range-from { z-index: 3; }
-.tl-range#range-to   { z-index: 4; }
+#timeline .tl-range#range-from { z-index: 3; }
+#timeline .tl-range#range-to   { z-index: 4; }
 
-.tl-range::-webkit-slider-runnable-track {
+/* Resetea por completo el track nativo (Chrome/Safari y Firefox
+   pintan su propio "groove" por defecto, aunque el fondo sea
+   transparente) para que el único track visible sea el riel
+   estilizado (.timeline-rail + .timeline-fill) debajo de las
+   manijas, evitando la impresión de dos líneas superpuestas. */
+#timeline .tl-range::-webkit-slider-runnable-track {
   background: transparent;
+  border: none;
+  box-shadow: none;
   height: 24px;
 }
-.tl-range::-moz-range-track {
+#timeline .tl-range::-moz-range-track {
   background: transparent;
+  border: none;
+  box-shadow: none;
   height: 24px;
 }
+#timeline .tl-range::-moz-focus-outer { border: 0; }
 
-.tl-range::-webkit-slider-thumb {
+#timeline .tl-range::-webkit-slider-thumb {
   -webkit-appearance: none;
   pointer-events: auto;   /* sólo la manija es interactiva */
   width: 20px;
@@ -210,7 +244,7 @@
   cursor: grab;
   transition: transform .15s, box-shadow .15s;
 }
-.tl-range::-moz-range-thumb {
+#timeline .tl-range::-moz-range-thumb {
   pointer-events: auto;
   width: 20px;
   height: 20px;
@@ -221,8 +255,8 @@
   cursor: grab;
   transition: transform .15s, box-shadow .15s;
 }
-.tl-range::-webkit-slider-thumb:active { transform: scale(1.15); cursor: grabbing; box-shadow: 0 0 0 6px rgba(39, 84, 108, .12); }
-.tl-range::-moz-range-thumb:active     { transform: scale(1.15); cursor: grabbing; box-shadow: 0 0 0 6px rgba(39, 84, 108, .12); }
+#timeline .tl-range::-webkit-slider-thumb:active { transform: scale(1.15); cursor: grabbing; box-shadow: 0 0 0 6px rgba(39, 84, 108, .12); }
+#timeline .tl-range::-moz-range-thumb:active     { transform: scale(1.15); cursor: grabbing; box-shadow: 0 0 0 6px rgba(39, 84, 108, .12); }
 
 /* Indicador flotante interactivo sobre cada manija -------- */
 .tl-bubble {
@@ -340,6 +374,7 @@
 }
 
 .btn-apply {
+  flex: 0 0 auto;
   font-family: var(--font-body);
   font-size: .88rem;
   font-weight: 600;
@@ -754,6 +789,35 @@
   .credits-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ----------------------------------------------------------
+   AGRADECIMIENTOS ESPECIALES
+   Nota breve y discreta, sin tarjetas ni divisores: un cierre
+   sencillo al pie de los créditos del equipo.
+---------------------------------------------------------- */
+.special-thanks {
+  margin-top: 1.75rem;
+  text-align: center;
+}
+
+.special-thanks-title {
+  font-family: var(--font-body);
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--color-principal);
+  margin: 0 0 .35rem;
+}
+
+.special-thanks-text {
+  font-family: var(--font-body);
+  font-size: .85rem;
+  color: var(--color-text-muted);
+  max-width: 460px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.special-thanks-text strong { color: var(--color-principal); }
+
 /* ============================================================
    RESPONSIVE
 ============================================================ */
@@ -773,6 +837,13 @@
     flex-direction: column;
     align-items: stretch;
   }
+
+  .timeline-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group--usertype { width: 100%; }
 
   .btn-apply { width: 100%; }
 
