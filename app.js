@@ -814,6 +814,17 @@ function renderFeedback({
       </div>
     </div>
   `).join('');
+
+  // Enlace discreto al Informe 2026-1, integrado al final de la
+  // tarjeta de cierre universal (type 'ok'), como siguiente paso
+  // natural tras leer la reflexión — no como un banner aparte.
+  const closingContent = container.querySelector('.feedback-card.ok .fc-content');
+  if (closingContent) {
+    closingContent.insertAdjacentHTML('beforeend', `
+      <a href="./stats/" class="reflection-stats-link">
+        📊 Conocer el panorama general de bienestar institucional (Informe 2026-1) ⟶
+      </a>`);
+  }
 }
 
 /* ----------------------------------------------------------

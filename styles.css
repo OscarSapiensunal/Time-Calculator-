@@ -887,28 +887,29 @@ input[type="number"]:focus {
   line-height: 1.6;
 }
 
-/* Invitación permanente al Informe 2026-1 — siguiente paso
-   natural tras leer la reflexión, sin ser disruptiva. */
-.stats-invite-banner {
-  display: block;
-  margin-top: 1.6rem;
-  padding: 1rem 1.4rem;
-  background: var(--color-acento-s);
+/* Enlace discreto al Informe 2026-1 — integrado al final de la
+   tarjeta de cierre, como siguiente paso natural y no invasivo. */
+.reflection-stats-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  margin-top: .9rem;
+  padding: .5rem 1rem;
+  background: var(--color-neutral);
   border: 1px solid rgba(39, 84, 108, .12);
-  border-radius: var(--radius);
+  border-radius: 100px;
   color: var(--color-principal);
   font-family: var(--font-body);
-  font-size: .95rem;
+  font-size: .85rem;
   font-weight: 600;
-  text-align: center;
   text-decoration: none;
-  transition: background .2s, transform .2s, box-shadow .2s;
+  transition: background .2s, border-color .2s, transform .15s;
 }
 
-.stats-invite-banner:hover {
-  background: var(--color-white);
-  box-shadow: var(--shadow);
-  transform: translateY(-2px);
+.reflection-stats-link:hover {
+  background: var(--color-acento-s);
+  border-color: var(--color-principal);
+  transform: translateX(2px);
 }
 
 /* ============================================================
