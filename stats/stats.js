@@ -189,7 +189,7 @@ function renderInsights(avgs) {
     ? `Fortaleza institucional: la comunidad duerme un promedio de ${fmt(avgs.sleepDaily)} h/noche. Sostener este estándar incluso bajo carga académica es un logro colectivo significativo que protege el rendimiento cognitivo y el bienestar general.`
     : sleep1State === 'ok'
       ? `El promedio de sueño se mantiene dentro del rango recomendado (${fmt(avgs.sleepDaily)} h/noche) incluso con una carga académica de ${fmt(avgs.study)} h/semana. Un indicador de equilibrio institucional positivo.`
-      : `La comunidad universitaria sostiene sus altas cargas académicas sacrificando el descanso base. En promedio, estamos acumulando una deuda de sueño colectiva que reduce el bienestar y afecta directamente el rendimiento cognitivo institucional.`;
+      : `La comunidad universitaria sostiene sus altas cargas académicas sacrificando el descanso base. En promedio, estamos acumulando una deuda de sueño colectiva que reduce el bienestar y afecta directamente el rendimiento cognitivo institucional. Los CDC (2024) recomiendan de 7 a 9 horas; menos de esto afecta la consolidación de memoria, aumenta la irritabilidad y el riesgo metabólico (National Heart, Lung, and Blood Institute, 2022).`;
 
   // — Story 2: Ocio digital vs bienestar activo
   const paradojaOcio  = avgs.screen > avgs.wellbeing;
@@ -202,7 +202,7 @@ function renderInsights(avgs) {
     ? `Fortaleza colectiva: el tiempo de pantallas (${fmt(avgs.screen)} h) es menos de la mitad del bienestar activo combinado (${fmt(avgs.wellbeing)} h de deporte, socialización y hobbies). La comunidad filtrada demuestra una relación saludable con la tecnología.`
     : digital2State === 'ok'
       ? `La comunidad supera el tiempo de pantallas (${fmt(avgs.screen)} h) con bienestar activo combinado (${fmt(avgs.wellbeing)} h) de deporte, socialización y hobbies. Una señal de agencia frente al consumo digital pasivo.`
-      : `Como comunidad, pasamos más tiempo promedio en pantallas recreativas (${fmt(avgs.screen)} h) que en descanso activo, deporte y socialización sumados (${fmt(avgs.wellbeing)} h). El consumo digital se ha convertido en la principal vía pasiva de desconexión.`;
+      : `Como comunidad, pasamos más tiempo promedio en pantallas recreativas (${fmt(avgs.screen)} h) que en descanso activo, deporte y socialización sumados (${fmt(avgs.wellbeing)} h). El consumo digital se ha convertido en la principal vía pasiva de desconexión. Tiempos superiores a 3 horas diarias en redes se asocian con trastornos del sueño, agotamiento y mayor ansiedad en universitarios (Osman, 2025).`;
 
   // — Story 3: Carga de transporte
   const transitState = avgs.transit <= 5 ? 'strength' : null;
@@ -224,7 +224,7 @@ function renderInsights(avgs) {
     ? `Fortaleza social institucional: el ${avgs.pctSocial.toFixed(0)}% de la comunidad reporta tiempo social activo, con un promedio de ${fmt(avgs.social)} h/semana. Las redes de apoyo interpersonal son sólidas y actúan como factor protector colectivo.`
     : social4State === 'ok'
       ? `La comunidad mantiene conexiones sociales activas con un promedio de ${fmt(avgs.social)} h/semana y el ${avgs.pctSocial.toFixed(0)}% de usuarios reportando tiempo social. Las redes de apoyo interpersonal se sostienen como factor protector.`
-      : `Detectamos una restricción severa en las redes de socialización activa de los usuarios filtrados. Las demandas cotidianas están desplazando los espacios comunitarios, aumentando el riesgo latente de aislamiento y pérdida de tejido de apoyo en la sede.`;
+      : `Detectamos una restricción severa en las redes de socialización activa de los usuarios filtrados. Las demandas cotidianas están desplazando los espacios comunitarios, aumentando el riesgo latente de aislamiento y pérdida de tejido de apoyo en la sede. La OMS recomienda 150 min semanales de actividad física, y dedicar al menos 2 horas a encuentros sociales sin agenda académica impacta directo en el bienestar emocional (Chalela-Naffah).`;
 
   const stories = [
     {
@@ -630,7 +630,18 @@ function wireTimelineEvents() {
   document.getElementById('user-type').addEventListener('change', renderFiltered);
 
   const milestone = document.getElementById('tl-milestone');
-  if (milestone) milestone.addEventListener('click', jumpToMilestone);
+  if (milestone) {
+    milestone.addEventListener('click', (e) => {
+      // El ícono "ⓘ" vive dentro del botón del hito pero no debe
+      // saltar al día — abre el contexto de la Feria en Instagram.
+      if (e.target.closest('.tl-milestone-info')) {
+        e.stopPropagation();
+        window.open('https://www.instagram.com/rapsi.unal/', '_blank', 'noopener');
+        return;
+      }
+      jumpToMilestone();
+    });
+  }
 }
 
 /* ----------------------------------------------------------

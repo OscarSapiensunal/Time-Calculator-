@@ -226,7 +226,8 @@ function calcular() {
     tLibreNeto, tBienestar, tOcioDigital,
     tAcademico, hTransit, hWork,
     sleep, isStudent,
-    hPhysical, hSocial
+    hPhysical, hSocial, hFood,
+    hStudy, hHouseTasks, hHobby
   });
 
   // --------------------------------------------------------
@@ -565,7 +566,8 @@ function renderFeedback({
   tLibreNeto, tBienestar, tOcioDigital,
   tAcademico, hTransit, hWork,
   sleep, isStudent,
-  hPhysical, hSocial
+  hPhysical, hSocial, hFood,
+  hStudy, hHouseTasks, hHobby
 }) {
   const hSleep         = sleep * CONFIG.diasSemana;
   const cargaDura      = tAcademico + hWork + hTransit;
@@ -574,20 +576,20 @@ function renderFeedback({
   const cards          = [];
   // ════════════════════════════════════════════════════════
   // ALERTAS — describir realidades, ofrecer palancas
+  // Nota: la sobreocupación crítica (tLibreNeto < 0) ya no se
+  // comunica aquí como tarjeta — calcular() bloquea el cálculo
+  // en tiempo real (ver #hours-overflow) antes de llegar a este
+  // punto, así que esa condición nunca se alcanza en la práctica.
   // ════════════════════════════════════════════════════════
-  // 1 · Sobreocupación física crítica
-  if (cards.length < MAX && tLibreNeto < 0) {
+  // 1 · Sueño por debajo de la recomendación (umbral estricto: 7 h/noche)
+  if (cards.length < MAX && hSleep < 49) {
     cards.push({
-      type: 'warn', icon: '🔴',
-      title: 'Tu semana no cierra',
-      body: `Lo que reportas suma más horas de las que tiene una semana.
-             No es falta de organización — es que el cubo no cierra.
-             Algo está ocupando espacio que no existe: probablemente sueño
-             negociado, comidas saltadas o multitarea invisible. Vale la pena
-             revisar qué está cediendo en silencio. La <a href="https://drive.google.com/file/d/1wcdjd-gvyvrm92v3QPHVvHjC1LDX5ASD/view?usp=sharing"
-             target="_blank" rel="noopener noreferrer"
-             class="feedback-ig-link">Cartilla de Bienestar RAPsi</a>
-             tiene estrategias concretas de afrontamiento para este momento.`
+      type: 'warn', icon: '😴',
+      title: 'Duermes menos de lo recomendado',
+      body: `Promedias ${fmt(hSleep / 7)} h de sueño por noche. Los CDC (2024)
+             recomiendan de 7 a 9 horas. Menos de esto afecta la consolidación
+             de memoria, aumenta la irritabilidad y el riesgo metabólico
+             (National Heart, Lung, and Blood Institute, 2022).`
     });
   }
   // 2 · Burnout estructural
@@ -619,7 +621,29 @@ function renderFeedback({
              tiene estrategias concretas de afrontamiento para este momento.`
     });
   }
-  // 4 · Procrastinación del sueño por pantallas
+  // 4 · Afrontamiento Evitativo (sobrecarga + refugio digital + sin red social)
+  if (cards.length < MAX && (hStudy + hWork) > 45 && tOcioDigital > 21 && hSocial < 2) {
+    cards.push({
+      type: 'warn', icon: '🌀',
+      title: 'Afrontamiento Evitativo',
+      body: `Sobrecarga y refugio digital: Las pantallas parecen ser tu escape.
+             El scrolling infinito silencia la ansiedad a corto plazo, pero la
+             acumula. Busca afrontar el estrés apoyándote en tu red social; es
+             tu mayor factor protector (Lazarus & Folkman).`
+    });
+  }
+  // 5 · Scrolling por encima de 3 h/día (umbral estricto, independiente)
+  if (cards.length < MAX && tOcioDigital > 21) {
+    cards.push({
+      type: 'warn', icon: '📲',
+      title: 'Más de 3 horas diarias en redes',
+      body: `Reportas ${fmt(tOcioDigital / 7)} h/día en pantallas recreativas.
+             Tiempos superiores a 3 horas diarias en redes se asocian con
+             trastornos del sueño, agotamiento y mayor ansiedad en
+             universitarios (Osman, 2025).`
+    });
+  }
+  // 6 · Procrastinación del sueño por pantallas
   if (cards.length < MAX && tOcioDigital > 15 && hSleep < 49) {
     cards.push({
       type: 'warn', icon: '🌙',
@@ -633,7 +657,7 @@ function renderFeedback({
              cognitiva y reduce la concentración disponible para cada una.`
     });
   }
-  // 5 · Evasión digital (no simple consumo alto)
+  // 7 · Evasión digital (no simple consumo alto)
   if (cards.length < MAX && tOcioDigital > 20 && tBienestar < tOcioDigital / 2) {
     cards.push({
       type: 'warn', icon: '📱',
@@ -644,10 +668,35 @@ function renderFeedback({
              buscando salida. La pregunta honesta: ¿de qué descansas cuando
              scrolleas? Tu celular registra tu uso real en Bienestar Digital (Android)
              o Tiempo en pantalla (iOS) — el número a veces sorprende y ayuda a
-             tomar decisiones más conscientes.`
+             tomar decisiones más conscientes.
+             <br><br>
+             <a href="https://www.instagram.com/rapsi.unal/" target="_blank" rel="noopener noreferrer" class="feedback-media-link">🎬 Ver la videocápsula de estudiantes</a>
+             <a href="https://www.instagram.com/rapsi.unal/" target="_blank" rel="noopener noreferrer" class="feedback-media-link">📱 Ver tips en nuestro Carrusel de Ocio</a>`
     });
   }
-  // 6 · Aislamiento social (regla independiente, no condicionada a estudio)
+  // 8 · Comidas con poco espacio (umbral ~1.5 h/día = 3 comidas × 30 min)
+  if (cards.length < MAX && hFood < 10.5) {
+    cards.push({
+      type: 'warn', icon: '🍽️',
+      title: 'Comidas con poco espacio',
+      body: `Dedicas ${fmt(hFood / 7)} h/día a comer (incluye preparar y el
+             descanso post-comida). Se recomienda extender las comidas a
+             unos 30 minutos. Comer pausado permite que el cerebro registre
+             la saciedad (Kokkinos et al., 2009).`
+    });
+  }
+  // 9 · Maratón de Tareas (mucha carga doméstica + poco tiempo libre)
+  if (cards.length < MAX && hHouseTasks > 12 && tLibreNeto < 10) {
+    cards.push({
+      type: 'warn', icon: '🧹',
+      title: 'Maratón de Tareas',
+      body: `Las labores domésticas consumen energía. Para evitar que sean un
+             estresor, Kielhofner (2008) recomienda distribuirlas en bloques
+             cortos de 20-30 minutos en lugar de hacer maratones de limpieza
+             el fin de semana.`
+    });
+  }
+  // 10 · Aislamiento social (regla independiente, no condicionada a estudio)
   if (cards.length < MAX && hSocial < 2) {
     cards.push({
       type: 'warn', icon: '🫥',
@@ -658,7 +707,18 @@ function renderFeedback({
              es de las palancas más rentables que existen para la salud mental.`
     });
   }
-  // 7 · Tiempo libre sin restauración
+  // 11 · Micro-pausas (sin espacio para el ocio)
+  if (cards.length < MAX && tBienestar < 3) {
+    cards.push({
+      type: 'warn', icon: '🧘',
+      title: 'Micro-pausas',
+      body: `Cuando no hay espacio para el ocio, las micro-pausas salvan. 10 a
+             20 minutos diarios de mindfulness reducen significativamente el
+             estrés en universitarios (Aiquipa-Meza, 2024). Apps como Insight
+             Timer son un buen inicio.`
+    });
+  }
+  // 12 · Tiempo libre sin restauración
   if (cards.length < MAX && tLibreNeto >= 5 && tBienestar < 3) {
     cards.push({
       type: 'warn', icon: '⏳',
@@ -670,7 +730,7 @@ function renderFeedback({
              de hacer cosas.`
     });
   }
-  // 8 · Transporte como segunda jornada (reframe, no prohibición)
+  // 13 · Transporte como segunda jornada (reframe, no prohibición)
   if (cards.length < MAX && hTransit > 12) {
     cards.push({
       type: 'warn', icon: '🚌',
@@ -686,7 +746,7 @@ function renderFeedback({
   // ════════════════════════════════════════════════════════
   // FORTALEZAS — reconocer balance, no umbrales aislados
   // ════════════════════════════════════════════════════════
-  // 9 · Balance Integral (la regla más exigente — la joya)
+  // 14 · Balance Integral (la regla más exigente — la joya)
   if (
     cards.length < MAX &&
     hSleep >= 49 &&
@@ -704,7 +764,7 @@ function renderFeedback({
              mantener.`
     });
   }
-  // 10 · Carga académica saludable (contextual: solo si el resto está bien)
+  // 15 · Carga académica saludable (contextual: solo si el resto está bien)
   if (
     cards.length < MAX &&
     isStudent &&
@@ -723,7 +783,7 @@ function renderFeedback({
          predicen el bienestar bajo carga alta. Tú estás haciendo eso.`
     });
   }
-  // 11 · Descanso en rango OMS
+  // 16 · Descanso en rango OMS
   if (cards.length < MAX && hSleep >= 49 && hSleep <= 63) {
     cards.push({
       type: 'strength', icon: '🌙',
@@ -735,7 +795,7 @@ function renderFeedback({
              cardiovascular. Estás cuidando lo que sostiene todo lo demás.`
     });
   }
-  // 12 · Vida activa
+  // 17 · Vida activa
   if (cards.length < MAX && hPhysical >= 3) {
     cards.push({
       type: 'strength', icon: '🏃',
@@ -744,10 +804,13 @@ function renderFeedback({
              150 min de actividad moderada o 75 min intensa por semana —
              no tiene que ser gimnasio: bailar, caminar rápido, nadar o
              hacer yoga en casa cuentan. Ese umbral protege contra la
-             ansiedad, mejora el sueño y fortalece la salud mental.`
+             ansiedad, mejora el sueño y fortalece la salud mental. Además,
+             dedicar al menos 2 horas a encuentros sociales sin agenda
+             académica impacta directo en el bienestar emocional
+             (Chalela-Naffah).`
     });
   }
-  // 13 · Red social viva
+  // 18 · Red social viva
   if (cards.length < MAX && hSocial >= 5) {
     cards.push({
       type: 'strength', icon: '💬',
@@ -756,10 +819,35 @@ function renderFeedback({
              personas que te importan. Investigaciones latinoamericanas en
              bienestar universitario señalan al menos 2 horas presenciales
              por semana como umbral de efecto protector. Los vínculos no
-             se construyen en crisis — se cultivan antes.`
+             se construyen en crisis — se cultivan antes. La OMS recomienda
+             además 150 min semanales de actividad física: combinar ambos
+             —movimiento y encuentros sin agenda académica— es lo que más
+             impacta el bienestar emocional (Chalela-Naffah).`
     });
   }
-  // 14 · Higiene digital
+  // 19 · Juego y Creatividad
+  if (cards.length < MAX && hHobby > 2) {
+    cards.push({
+      type: 'strength', icon: '🎨',
+      title: 'Juego y Creatividad',
+      body: `El juego y la creatividad no son solo para la infancia. Dedicar
+             tiempo a un hobby sin presión de resultados activa tu sistema de
+             recompensa cerebral y te regula emocionalmente (Brown, 2009;
+             Stuckey & Nobel).`
+    });
+  }
+  // 20 · Autocuidado Ocupacional
+  if (cards.length < MAX && hHouseTasks > 4 && hHouseTasks < 10) {
+    cards.push({
+      type: 'strength', icon: '🧺',
+      title: 'Autocuidado Ocupacional',
+      body: `Mantener tu espacio y tus comidas al día es Autocuidado
+             Ocupacional. Has integrado estas tareas en tu rutina, lo que
+             genera sensación de logro y control sobre tu entorno
+             (Kielhofner, 2008).`
+    });
+  }
+  // 21 · Higiene digital
   if (cards.length < MAX && tOcioDigital <= 12) {
     cards.push({
       type: 'strength', icon: '✨',
@@ -779,7 +867,16 @@ function renderFeedback({
     body: `Haber completado esta reflexión ya dice algo sobre ti: que te importa
            tu bienestar, no solo tu rendimiento. No existe una distribución
            perfecta del tiempo. Existe la que te permite estudiar con sentido,
-           descansar de verdad y seguir siendo tú. Si algo de lo que viste hoy
+           descansar de verdad y seguir siendo tú.
+           <br><br>
+           Un tip de afrontamiento: identifica qué puedes controlar
+           (afrontamiento centrado en el problema) y evita aislarte. El apoyo
+           social es tu principal factor protector.
+           <br><br>
+           Recuerda: tu bienestar no depende solo de ti, sino del entorno que
+           habitas. La universidad tiene redes para apoyarte.
+           <br><br>
+           Si algo de lo que viste hoy
            te inquieta,
            <a href="https://www.instagram.com/rapsi.unal/" target="_blank" rel="noopener noreferrer" class="feedback-ig-link">@rapsi.unal</a> y
            <a href="https://www.instagram.com/acompanamientounal_bog/"
