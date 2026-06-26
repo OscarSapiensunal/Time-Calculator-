@@ -151,6 +151,7 @@
   border: 1px solid rgba(39, 84, 108, .08);
   padding: .3rem .75rem;
   border-radius: 100px;
+  pointer-events: none; /* no debe bloquear el toque/clic del slider en mobile/tablet */
 }
 
 .tl-pill strong {
@@ -811,7 +812,7 @@
   font-family: var(--font-body);
   font-size: .85rem;
   color: var(--color-text-muted);
-  max-width: 460px;
+  max-width: 560px;
   margin: 0 auto;
   line-height: 1.5;
 }
