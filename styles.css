@@ -1011,6 +1011,33 @@ input[type="number"]:focus {
 
 .feedback-ig-link:hover { opacity: .75; }
 
+/* Botones discretos hacia los productos multimedia de la
+   campaña del Ociómetro (videocápsula, carrusel de ocio).
+   Viven dentro de un <p>, por eso son <a> inline-flex y no
+   <div>/<button> — evita que el navegador cierre el párrafo. */
+.feedback-media-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  margin: .5rem .5rem 0 0;
+  padding: .4rem .8rem;
+  background: var(--color-white);
+  border: 1px solid rgba(39, 84, 108, .15);
+  border-radius: 100px;
+  color: var(--color-principal);
+  font-family: var(--font-body);
+  font-size: .78rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .2s, border-color .2s, transform .15s;
+}
+
+.feedback-media-link:hover {
+  background: var(--color-acento-s);
+  border-color: var(--color-principal);
+  transform: translateY(-1px);
+}
+
 .rapsi-badge {
   display: inline-flex;
   align-items: center;

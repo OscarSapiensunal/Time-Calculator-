@@ -288,7 +288,13 @@
 .timeline:hover .tl-bubble,
 .timeline:focus-within .tl-bubble { opacity: 1; }
 
-/* Hito destacado: Feria de las Emociones ------------------ */
+/* Hito destacado: Feria de las Emociones ------------------
+   z-index por debajo de las manijas (#range-from/#range-to,
+   z-index 3/4 vía sus thumbs): la caja del botón es más ancha
+   que el punto visible (el badge de texto se extiende a los
+   lados) y, si quedaba por encima, tapaba el área táctil de la
+   manija en los puntos donde se solapan — bloqueando el drag
+   del slider en móvil/tablet justo sobre el 21 de mayo. */
 .timeline-milestone {
   position: absolute;
   top: 40px;
@@ -301,7 +307,7 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  z-index: 5;
+  z-index: 1;
 }
 
 .tl-milestone-dot {
@@ -332,6 +338,23 @@
   white-space: nowrap;
   box-shadow: 0 3px 10px rgba(255, 148, 145, .35);
   transition: transform .15s, box-shadow .15s;
+}
+
+/* Ícono de contexto discreto: enlace a Instagram con info sobre
+   el hito. Vive dentro del botón del hito, pero stats.js
+   intercepta su clic para abrir Instagram en vez de saltar al
+   día (ver jumpToMilestone). */
+.tl-milestone-info {
+  margin-left: .35rem;
+  opacity: .8;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  transition: opacity .15s;
+}
+
+.tl-milestone-info:hover,
+.tl-milestone-info:focus-visible {
+  opacity: 1;
 }
 
 .timeline-milestone:hover .tl-milestone-dot   { transform: scale(1.18); }
@@ -827,7 +850,7 @@
 }
 
 /* En pantallas muy estrechas (≤400px), KPIs en columna única
-   para que labels como "Tiempo para el bienestar (promedio)"
+   para que labels como "Ociómetro · Tiempo de Bienestar (promedio)"
    no queden apretados a ~155px. */
 @media (max-width: 400px) {
   .kpi-grid { grid-template-columns: 1fr; }
